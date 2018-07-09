@@ -1,0 +1,16 @@
+<h3 class='section__hed'>{{copy.perspectiveHed}}</h3>
+<div id='perspective-scroll'>
+	<div class='scroll__graphic'>
+		<svg>
+			<g class='g-axis'></g>
+			<g class='g-vis'></g>
+		</svg>
+	</div>
+	<div class='scroll__text'>
+		{{#each copy.perspectiveSteps}}
+		<div class='step' data-step='{{step}}'>
+			<p>{{text}}</p>
+		</div>
+		{{/each}}
+	</div>
+</div>

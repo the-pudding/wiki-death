@@ -1,7 +1,7 @@
 // D3 is included by globally by default
 import debounce from 'lodash.debounce';
 import isMobile from './utils/is-mobile';
-import graphic from './graphic';
+import graphicPerspective from './graphic-perspective';
 
 const $body = d3.select('body');
 let previousWidth = 0;
@@ -12,7 +12,7 @@ function resize() {
 	const width = $body.node().offsetWidth;
 	if (previousWidth !== width) {
 		previousWidth = width;
-		graphic.resize();
+		graphicPerspective.resize();
 	}
 }
 
@@ -37,7 +37,7 @@ function init() {
 	// setup sticky header menu
 	setupStickyHeader();
 	// kick off graphic code
-	graphic.init();
+	graphicPerspective.init();
 }
 
 init();
