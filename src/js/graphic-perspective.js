@@ -1,53 +1,99 @@
 import scrollama from 'scrollama';
 import stickyfill from 'stickyfilljs';
-import convertTimestampToDate from './convert-timestamp-to-date';
+import cleanData from './clean-data';
 
-const MARGIN = { top: 10, bottom: 40, left: 10, right: 10 };
+const MARGIN = { top: 10, bottom: 40, left: 40, right: 10 };
+const FONT_SIZE = 12;
+const PRINCE_ID = '57317';
+const DATE_MARCH = new Date(2016, 2, 1);
+const DATE_JUNE = new Date(2016, 5, 1);
+
 let width = 0;
 let height = 0;
 let peopleData = null;
 let pageviewData = null;
+let princeData = null;
 let beyonceData = null;
+let currentStep = 'context';
 
 const $section = d3.select('#perspective');
 const $text = $section.select('.scroll__text');
+const $step = $text.selectAll('.step');
 const $graphic = $section.select('.scroll__graphic');
 const $chart = $graphic.select('.graphic__chart');
 const $svg = $chart.select('svg');
 const $gVis = $svg.select('.g-vis');
 const $gAxis = $svg.select('.g-axis');
 
-let currentStep = 'context'
+const scroller = scrollama();
+
+function getScaleX(data) {
+	// scales
+	return d3
+		.scaleTime()
+		.domain(d3.extent(data, d => d.date))
+		.nice()
+		.range([0, width]);
+}
+
+function getScaleY(data) {
+	const maxY = d3.max(data, d => d.views_adjusted);
+
+	return d3
+		.scaleLinear()
+		.domain([0, maxY])
+		.range([height, 0]);
+}
+
+function getLine({ scaleX, scaleY }) {
+	return d3
+		.line()
+		.x(d => scaleX(d.date))
+		.y(d => scaleY(d.views_adjusted))
+		.curve(d3.curveMonotoneX)
+		.defined(d => d.views_adjusted);
+}
+
+function updateAxis({ scaleX, scaleY }) {
+	const axisY = d3
+		.axisLeft(scaleY)
+		.tickFormat(d3.format('.2s'))
+		.tickSize(-width + MARGIN.left)
+		.ticks(5);
+
+	$gAxis
+		.select('.axis--y')
+		.call(axisY)
+		.at('transform', `translate(${MARGIN.left}, ${MARGIN.top})`);
+
+	const axisX = d3
+		.axisBottom(scaleX)
+		.ticks(d3.timeMonth.every(1))
+		.tickSize(0)
+		.tickPadding(FONT_SIZE / 2);
+
+	$gAxis
+		.select('.axis--x')
+		.call(axisX)
+		.at('transform', `translate(${MARGIN.left}, ${height})`);
+}
 
 const STEP = {
 	context: () => {
-		// scales
-		const scaleX = d3
-			.scaleTime()
-			.domain(d3.extent(beyonceData, d => d.date))
-			.range([0, width]);
+		// DATA
+		const data = beyonceData.filter(
+			d => d.date >= DATE_MARCH && d.date < DATE_JUNE
+		);
 
-		const maxY = d3.max(beyonceData, d => d.views_adjusted);
+		// SCALE
+		const scaleX = getScaleX(data);
+		const scaleY = getScaleY(data);
 
-		const scaleY = d3
-			.scaleLinear()
-			.domain([0, maxY])
-			.range([height, 0]);
+		// AXIS
+		updateAxis({ scaleX, scaleY });
 
-		// line function
-		const line = d3
-			.line()
-			.x(d => scaleX(d.date))
-			.y(d => scaleY(d.views_adjusted))
-			.curve(d3.curveMonotoneX)
-			.defined(d => d.views_adjusted);
-
-		// axis
-		// const axisY = d3.axisLeft(scaleY)
-		// $axisY.call(axisY);
-
-		// const axisX = d3.axisBottom(scaleX);
-		// $axisX.call(axisX).at('transform', `translate(0, ${height})`);
+		// PEOPLE
+		const line = getLine({ scaleX, scaleY });
 
 		const $person = $gVis
 			.select('.beyonce')
@@ -65,7 +111,7 @@ const STEP = {
 			.at({
 				cx: 0,
 				cy: 0,
-				r: 3
+				r: 4
 			});
 
 		const $personMerge = $personEnter.merge($person);
@@ -80,13 +126,53 @@ const STEP = {
 				'transform',
 				d => `translate(${scaleX(d.date)}, ${scaleY(d.views_adjusted)})`
 			);
-	}
+	},
+	'prince-before': () => {
+		// DATA
+		const axisData = beyonceData.filter(
+			d => d.date >= DATE_MARCH && d.date < DATE_JUNE
+		);
+
+		const dateSpike = new Date(2016, 3, 21);
+		const data = princeData.filter(
+			d => d.date >= DATE_MARCH && d.date < dateSpike
+		);
+
+		// SCALE
+		const scaleX = getScaleX(axisData);
+		const scaleY = getScaleY(axisData);
+
+		// AXIS
+		updateAxis({ scaleX, scaleY });
+
+		// PEOPLE
+	},
+	'prince-spike': () => {
+		const data = princeData.filter(
+			d => d.date >= DATE_MARCH && d.date < DATE_JUNE
+		);
+
+		// SCALE
+		const scaleX = getScaleX(data);
+		const scaleY = getScaleY(data);
+
+		// AXIS
+		updateAxis({ scaleX, scaleY });
+
+		// PEOPLE
+	},
+	others: () => {}
 };
 
 function updateDimensions() {
 	const h = window.innerHeight;
 	height = Math.floor(h * 0.8) - MARGIN.top - MARGIN.bottom;
 	width = $chart.node().offsetWidth - MARGIN.left - MARGIN.right;
+}
+
+function updateStep() {
+	console.log({ currentStep });
+	STEP[currentStep]();
 }
 
 function resize() {
@@ -96,34 +182,27 @@ function resize() {
 		height: height + MARGIN.top + MARGIN.bottom
 	});
 	$gVis.at('transform', `translate(${MARGIN.left}, ${MARGIN.top})`);
-	STEP[currentStep]()
+	$step.st('height', Math.floor(window.innerHeight * 0.9));
+	updateStep();
 }
 
-function cleanPeopleData(data) {
-	return data.map(d => ({
-		...d,
-		max_change_before_share: +d.max_change_before_share,
-		median_views_before: +d.median_views_before,
-		median_share_before: +d.median_share_before,
-		max_views: +d.max_views,
-		max_share: +d.max_share,
-		thumbnail_width: +d.thumbnail_width,
-		thumbnail_height: +d.thumbnail_height,
-		year_of_birth: +d.year_of_birth,
-		year_of_death: +d.year_of_death
-	}));
+function handleStepEnter({ index, element, direction }) {
+	// console.log({ step: 'enter', index, element, direction });
+	currentStep = d3.select(element).at('data-step');
+	updateStep();
 }
 
-function cleanPageviewData(data) {
-	return data.map(d => ({
-		...d,
-		bin: +d.bin,
-		bin_death_index: +d.bin_death_index,
-		views: +d.views,
-		views_adjusted: +d.views_adjusted,
-		share: +d.share,
-		date: convertTimestampToDate(d.timestamp)
-	}));
+function handleStepExit({ index, element, direction }) {
+	// console.log({ step: 'exit', index, element, direction });
+}
+
+function setupScroller() {
+	scroller
+		.setup({
+			step: $step.nodes()
+		})
+		.onStepEnter(handleStepEnter)
+		.onStepExit(handleStepExit);
 }
 
 function loadData() {
@@ -132,14 +211,11 @@ function loadData() {
 		const filepaths = filenames.map(f => `assets/data/${f}.csv`);
 		d3.loadData(...filepaths, (err, response) => {
 			if (err) reject(err);
-			peopleData = cleanPeopleData(response[0]);
-			pageviewData = cleanPageviewData(response[1]);
-			// filter beyonce to Mar - May
-			const dateMarch = new Date(2016, 2, 1);
-			const dateMay = new Date(2016, 5, 1);
-			beyonceData = cleanPageviewData(response[2]).filter(
-				d => d.date >= dateMarch && d.date < dateMay
-			);
+			peopleData = cleanData.people(response[0]);
+			pageviewData = cleanData.pageview(response[1]);
+			princeData = pageviewData.filter(d => d.pageid === PRINCE_ID);
+
+			beyonceData = cleanData.pageview(response[2]);
 			resolve();
 		});
 	});
@@ -148,6 +224,7 @@ function loadData() {
 function init() {
 	loadData().then(() => {
 		resize();
+		setupScroller();
 	});
 }
 

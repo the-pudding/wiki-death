@@ -1,6 +1,6 @@
 #perspective
 	.scroll__graphic
-		background rgba(yellow, 0.5)
+		// background rgba(yellow, 0.5)
 		position sticky
 		top 0
 		padding 1rem
@@ -8,18 +8,20 @@
 	.graphic__chart
 		max-width 80rem
 		margin 0 auto
-		background rgba(green, 0.5)
+		// background rgba(green, 0.5)
 
 	.scroll__text
 		position relative
-		background rgba(red, 0.5)
+		// background rgba(red, 0.5)
 
 	.step
 		max-width 25rem
 		margin 0 auto
-		height 50vh
 		p
 			margin 0
+			padding 1rem
+			background-color rgba($white, 1)
+			box-shadow 0 0 1px 1px rgba($black, 0.33)
 
 
 	.graphic__chart svg
@@ -27,3 +29,21 @@
 			path
 				fill none
 				stroke $off-black
+				stroke-width 3px
+
+		.axis--x
+			.tick line
+				display none
+			path
+				display none
+			.tick:last-of-type
+				display none
+
+		.axis--y
+			.tick:first-of-type
+				display none
+			.tick line
+				stroke-opacity 0.5
+				stroke $gray
+			path
+				display none 
