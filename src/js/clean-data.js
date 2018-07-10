@@ -18,6 +18,7 @@ function people(data) {
 function pageview(data) {
 	return data.map(d => ({
 		...d,
+		pageid: d.pageid || 'beyonce',
 		bin: +d.bin,
 		bin_death_index: +d.bin_death_index,
 		views: +d.views,
