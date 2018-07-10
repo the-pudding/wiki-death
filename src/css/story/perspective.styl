@@ -4,6 +4,7 @@
 		position sticky
 		top 0
 		padding 1rem
+		transform translate3d(0,0,0)
 
 	.graphic__chart
 		max-width 80rem
@@ -11,12 +12,14 @@
 		// background rgba(green, 0.5)
 
 	.scroll__text
+		pointer-events none
 		position relative
 		// background rgba(red, 0.5)
 
 	.step
 		max-width 25rem
 		margin 0 auto
+		min-height 20rem
 		p
 			margin 0
 			padding 1rem
@@ -30,14 +33,20 @@
 				fill none
 				stroke $off-black
 				stroke-width 3px
+			
+			circle
+				// display none
+				fill none
+				stroke $off-black
+				stroke-width 1px
 
 		.axis--x
 			.tick line
 				display none
 			path
 				display none
-			.tick:last-of-type
-				display none
+			// .tick:last-of-type
+			// 	display none
 
 		.axis--y
 			.tick:first-of-type
@@ -45,5 +54,14 @@
 			.tick line
 				stroke-opacity 0.5
 				stroke $gray
+				stroke-width 1px
+				stroke-dasharray 4px 4px
 			path
 				display none 
+
+	
+		.beyonce
+			transition opacity 500ms ease-in-out
+
+		.is-transparent
+			opacity 0
