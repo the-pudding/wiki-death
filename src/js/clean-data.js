@@ -1,8 +1,9 @@
 import convertTimestampToDate from './convert-timestamp-to-date';
 
 function people(data) {
-	return data.map(d => ({
+	return data.map((d, i) => ({
 		...d,
+		index: i,
 		max_change_before_views: +d.max_change_before_views,
 		max_change_before_views_adjusted: +d.max_change_before_views_adjusted,
 		max_change_before_share: +d.max_change_before_share,

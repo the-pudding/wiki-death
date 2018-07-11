@@ -58,9 +58,10 @@
 					opacity 0
 			
 			circle
-				fill none
-				stroke $off-black
-				stroke-width 1px
+				stroke $gray
+				fill $bg
+				stroke-width 2px
+
 				&.is-transparent
 					opacity 0
 		
@@ -69,4 +70,6 @@
 		
 			&.is-highlight
 				path
+					stroke $primary
+				circle
 					stroke $primary
