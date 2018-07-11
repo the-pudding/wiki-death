@@ -17,29 +17,17 @@
 		// background rgba(red, 0.5)
 
 	.step
-		max-width 25rem
+		max-width $column-width
 		margin 0 auto
-		min-height 20rem
+		padding-bottom 320px
 		p
 			margin 0
 			padding 1rem
-			background-color rgba($white, 1)
-			box-shadow 0 0 1px 1px rgba($black, 0.33)
+			background-color rgba($off-white, 1)
+			box-shadow 0 0 10px 2px rgba($gray, 0.33)
 
 
 	.graphic__chart svg
-		.person
-			path
-				fill none
-				stroke $off-black
-				stroke-width 3px
-			
-			circle
-				// display none
-				fill none
-				stroke $off-black
-				stroke-width 1px
-
 		.axis--x
 			.tick line
 				display none
@@ -59,5 +47,26 @@
 			path
 				display none 
 
-		.is-transparent
-			opacity 0
+
+		.person
+			path
+				fill none
+				stroke $gray
+				stroke-width 3px
+				transition stroke 250ms ease-in-out
+				&.is-transparent
+					opacity 0
+			
+			circle
+				fill none
+				stroke $off-black
+				stroke-width 1px
+				&.is-transparent
+					opacity 0
+		
+			&.is-transparent
+				opacity 0
+		
+			&.is-highlight
+				path
+					stroke $primary

@@ -3,11 +3,18 @@ import convertTimestampToDate from './convert-timestamp-to-date';
 function people(data) {
 	return data.map(d => ({
 		...d,
+		max_change_before_views: +d.max_change_before_views,
+		max_change_before_views_adjusted: +d.max_change_before_views_adjusted,
 		max_change_before_share: +d.max_change_before_share,
+
 		median_views_before: +d.median_views_before,
+		median_views_adjusted_before: +d.median_views_adjusted_before,
 		median_share_before: +d.median_share_before,
+
 		max_views: +d.max_views,
+		max_views_adjusted: +d.max_views_adjusted,
 		max_share: +d.max_share,
+
 		thumbnail_width: +d.thumbnail_width,
 		thumbnail_height: +d.thumbnail_height,
 		year_of_birth: +d.year_of_birth,
