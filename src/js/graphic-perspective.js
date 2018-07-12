@@ -1,5 +1,5 @@
+import Stickyfill from 'stickyfilljs';
 import scrollama from 'scrollama';
-import stickyfill from 'stickyfilljs';
 import cleanData from './clean-data';
 
 const MARGIN = { top: 10, bottom: 40, left: 40, right: 10 };
@@ -538,6 +538,8 @@ function handleStepEnter({ index, element, direction }) {
 // }
 
 function setupScroller() {
+	Stickyfill.add($graphic.node());
+
 	scroller
 		.setup({
 			step: $step.nodes()
