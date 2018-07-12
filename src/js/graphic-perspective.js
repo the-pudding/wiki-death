@@ -10,7 +10,7 @@ const DATE_JUNE = new Date(2016, 5, 1);
 const MIN_R = 3;
 const MAX_R = 12;
 const SEC = 1000;
-const DURATION = SEC;
+const DURATION = SEC * 3;
 const EASE = d3.easeCubicInOut;
 
 let width = 0;
@@ -72,17 +72,27 @@ function getLine({ scaleX, scaleY }) {
 function updateAxis({ scaleX, scaleY, dur, ticks = d3.timeMonth.every(1) }) {
 	const axisY = d3
 		.axisLeft(scaleY)
-		.tickFormat(d3.format('.2s'))
+		.tickFormat((val, i) => {
+			const formatted = d3.format('.2s')(val);
+			const suffix = i === 6 ? ' pageviews' : '';
+			return `${formatted}${suffix}`;
+		})
 		.tickSize(-width)
 		.ticks(5);
 
 	$gAxis
 		.select('.axis--y')
 		.transition()
-		.duration(dur.medium)
+		.duration(dur.slow)
 		.ease(EASE)
 		.call(axisY)
 		.at('transform', `translate(${MARGIN.left}, ${MARGIN.top})`);
+
+	$gAxis
+		.select('.axis--y .tick:last-of-type')
+		.select('text')
+		.at('text-anchor', 'start')
+		.at('transform', `translate(${-MARGIN.left + 12}, 0)`); // 3 = default tick padding
 
 	function multiFormat(date) {
 		return (d3.timeYear(date) < date
@@ -100,7 +110,7 @@ function updateAxis({ scaleX, scaleY, dur, ticks = d3.timeMonth.every(1) }) {
 	$gAxis
 		.select('.axis--x')
 		.transition()
-		.duration(dur.medium)
+		.duration(dur.slow)
 		.ease(EASE)
 		.call(axisX)
 		.at('transform', `translate(${MARGIN.left}, ${height})`);
@@ -291,7 +301,7 @@ const STEP = {
 				.selectAll('circle')
 				.transition()
 				.duration(dur.medium)
-				.delay((d, i, n) => (i / n.length) * dur.slow)
+				.delay((d, i, n) => dur.slow + (i / n.length) * dur.fast)
 				.ease(EASE)
 				.at('r', d => (d.bin_death_index === 0 ? MAX_R : MIN_R));
 		}
@@ -356,7 +366,7 @@ const STEP = {
 				.selectAll('circle')
 				.transition()
 				.duration(dur.medium)
-				.delay((d, i, n) => (i / n.length) * dur.slow)
+				.delay(dur.slow)
 				.ease(EASE)
 				.at('r', d => (d.bin_death_index === 0 ? MAX_R : MIN_R));
 		};
@@ -542,7 +552,8 @@ function setupScroller() {
 
 	scroller
 		.setup({
-			step: $step.nodes()
+			step: $step.nodes(),
+			offset: 0.95
 		})
 		.onStepEnter(handleStepEnter);
 	// .onStepExit(handleStepExit);
