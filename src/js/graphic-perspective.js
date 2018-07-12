@@ -7,13 +7,10 @@ const FONT_SIZE = 12;
 const PRINCE_ID = '57317';
 const DATE_MARCH = new Date(2016, 2, 1);
 const DATE_JUNE = new Date(2016, 5, 1);
-const DATE_BEFORE_SPIKE = new Date(2016, 3, 21);
-const DATE_SPIKE = new Date(2016, 3, 22);
 const MIN_R = 3;
 const MAX_R = 12;
 const SEC = 1000;
 const DURATION = SEC;
-const DURATION_EXIT = DURATION / 2;
 const EASE = d3.easeCubicInOut;
 
 let width = 0;
@@ -72,7 +69,7 @@ function getLine({ scaleX, scaleY }) {
 		.defined(d => d.views_adjusted);
 }
 
-function updateAxis({ scaleX, scaleY, ticks = d3.timeMonth.every(1) }) {
+function updateAxis({ scaleX, scaleY, dur, ticks = d3.timeMonth.every(1) }) {
 	const axisY = d3
 		.axisLeft(scaleY)
 		.tickFormat(d3.format('.2s'))
@@ -81,6 +78,9 @@ function updateAxis({ scaleX, scaleY, ticks = d3.timeMonth.every(1) }) {
 
 	$gAxis
 		.select('.axis--y')
+		.transition()
+		.duration(dur.medium)
+		.ease(EASE)
 		.call(axisY)
 		.at('transform', `translate(${MARGIN.left}, ${MARGIN.top})`);
 
@@ -99,6 +99,9 @@ function updateAxis({ scaleX, scaleY, ticks = d3.timeMonth.every(1) }) {
 
 	$gAxis
 		.select('.axis--x')
+		.transition()
+		.duration(dur.medium)
+		.ease(EASE)
 		.call(axisX)
 		.at('transform', `translate(${MARGIN.left}, ${height})`);
 }
@@ -122,7 +125,7 @@ function enterPerson($person) {
 }
 
 function enterCircles($person, { scaleX, scaleY, r = MIN_R }) {
-	$person
+	const $c = $person
 		.select('.circles')
 		.selectAll('circle')
 		.data(
@@ -132,8 +135,9 @@ function enterCircles($person, { scaleX, scaleY, r = MIN_R }) {
 						['beyonce', PRINCE_ID].includes(p.pageid) || p.bin_death_index === 0
 				),
 			k => k.timestamp
-		)
-		.enter()
+		);
+
+	$c.enter()
 		.append('circle')
 		.classed('is-not-death-index', d => d.bin_death_index !== 0)
 		.at({
@@ -145,14 +149,15 @@ function enterCircles($person, { scaleX, scaleY, r = MIN_R }) {
 			'transform',
 			d => `translate(${scaleX(d.date)}, ${scaleY(d.views_adjusted)})`
 		);
+
+	$c.exit().remove();
 }
 
-function updatePath($person, { scaleX, scaleY }) {
+function updatePath($person, { scaleX, scaleY, render = true }) {
 	const line = getLine({ scaleX, scaleY });
-	$person
-		.selectAll('path')
-		.data(d => [d.pageviews])
-		.at('d', line);
+	$person.selectAll('path').data(d => [d.pageviews]);
+
+	if (render) $person.selectAll('path').at('d', line);
 }
 
 function trimPageviews(pageviews, { start = -1, end = 0 }) {
@@ -169,9 +174,25 @@ function findPrinceStart(date) {
 	return data[filtered[0].i].bin_death_index;
 }
 
+function getDuration({ leave, reverse }) {
+	let factor = 1;
+	if (leave) factor = 0;
+	else if (reverse) factor = 0.33;
+	const slow = DURATION * factor;
+	const medium = Math.floor(slow * 0.33);
+	const fast = Math.floor(slow * 0.1);
+	return {
+		slow,
+		medium,
+		fast
+	};
+}
+
 // step render
 const STEP = {
 	context: ({ reverse, leave }) => {
+		const dur = getDuration({ leave, reverse });
+
 		// DATA
 		const data = beyonceData;
 
@@ -180,7 +201,7 @@ const STEP = {
 		const scaleY = getScaleY();
 
 		// AXIS
-		updateAxis({ scaleX, scaleY });
+		updateAxis({ scaleX, scaleY, dur });
 
 		// PEOPLE
 		const $person = $people.selectAll('.person').data(data, d => d.pageid);
@@ -194,8 +215,20 @@ const STEP = {
 
 		// highlight beyonce
 		$personMerge.classed('is-highlight', true);
+
+		// EXIT
+		$person
+			.exit()
+			.transition()
+			.duration(dur.fast)
+			.st('opacity', 0)
+			.remove();
 	},
 	'prince-before': ({ reverse, leave }) => {
+		if (!reverse && !leave) STEP.context({ leave: true });
+
+		const dur = getDuration({ leave, reverse });
+
 		// DATA
 		const start = findPrinceStart(DATE_MARCH);
 		const data = peopleData
@@ -211,7 +244,7 @@ const STEP = {
 		const scaleY = getScaleY();
 
 		// AXIS
-		updateAxis({ scaleX, scaleY });
+		updateAxis({ scaleX, scaleY, dur });
 
 		// PEOPLE
 		const $person = $people.selectAll('.person').data(data, d => d.pageid);
@@ -220,40 +253,58 @@ const STEP = {
 			.append('g.person')
 			.call(enterPerson);
 		const $personMerge = $personEnter.merge($person);
-		$personMerge.call(updatePath, { scaleX, scaleY });
 		$personMerge.call(enterCircles, { scaleX, scaleY, r: 0 });
+		$personMerge.call(updatePath, { scaleX, scaleY, render: !reverse });
 
-		const $prince = $personMerge.filter(d => d.pageid === PRINCE_ID);
+		// TRANSITION
+		const line = getLine({ scaleX, scaleY });
+		if (reverse) {
+			$personMerge
+				.selectAll('path')
+				.transition()
+				.duration(dur.slow)
+				.ease(EASE)
+				.at('d', line)
+				.st('opacity', 1);
 
-		$prince.call(resetLine);
-		$prince
-			.selectAll('path')
-			.transition()
-			.duration(DURATION)
-			.ease(EASE)
-			.at('stroke-dashoffset', 0);
+			$personMerge
+				.selectAll('circle')
+				.transition()
+				.duration(dur.slow)
+				.ease(EASE)
+				.st('opacity', 1)
+				.at(
+					'transform',
+					d => `translate(${scaleX(d.date)}, ${scaleY(d.views_adjusted)})`
+				);
+		} else {
+			const $prince = $personMerge.filter(d => d.pageid === PRINCE_ID);
+			$prince.call(resetLine);
+			$prince
+				.selectAll('path')
+				.transition()
+				.duration(dur.slow)
+				.ease(EASE)
+				.at('stroke-dashoffset', 0);
 
-		$prince
-			.selectAll('circle')
-			.transition()
-			.duration(SEC)
-			.delay((d, i, n) => (i / n.length) * DURATION)
-			.ease(EASE)
-			.at('r', d => (d.bin_death_index === 0 ? MAX_R : MIN_R));
+			$prince
+				.selectAll('circle')
+				.transition()
+				.duration(dur.medium)
+				.delay((d, i, n) => (i / n.length) * dur.slow)
+				.ease(EASE)
+				.at('r', d => (d.bin_death_index === 0 ? MAX_R : MIN_R));
+		}
 
 		// highlight prince
 		$personMerge.classed('is-highlight', d => d.pageid === PRINCE_ID);
 		$personMerge.filter(d => d.pageid === PRINCE_ID).raise();
-
-		// // CLEANUP
-		// if (leave && reverse) {
-		// 	$person
-		// 		.data([])
-		// 		.exit()
-		// 		.remove();
-		// }
 	},
-	'prince-spike': () => {
+	'prince-spike': ({ reverse, leave }) => {
+		if (!reverse && !leave) STEP['prince-before']({ leave: true });
+
+		const dur = getDuration({ leave, reverse });
+
 		// DATA
 		const start = findPrinceStart(DATE_MARCH);
 		const data = peopleData
@@ -270,7 +321,7 @@ const STEP = {
 		const scaleY = getScaleY(princeViews);
 
 		// AXIS
-		updateAxis({ scaleX, scaleY });
+		updateAxis({ scaleX, scaleY, dur });
 
 		// PEOPLE
 		const $person = $people.selectAll('.person').data(data, d => d.pageid);
@@ -281,7 +332,7 @@ const STEP = {
 		const $personMerge = $personEnter.merge($person);
 
 		// TRANSITION
-		const addSpike = () => {
+		const addSpike = end => {
 			const $prince = $personMerge.filter(d => d.pageid === PRINCE_ID);
 
 			const previousLen = $prince
@@ -289,141 +340,166 @@ const STEP = {
 				.node()
 				.getTotalLength();
 
-			$personMerge.call(updatePath, { scaleX, scaleY });
-			$personMerge.call(enterCircles, { scaleX, scaleY, r: 0 });
+			$prince.call(updatePath, { scaleX, scaleY });
+			$prince.call(enterCircles, { scaleX, scaleY, r: 0 });
 
-			$prince.call(resetLine, previousLen);
+			if (!leave && !reverse) $prince.call(resetLine, previousLen);
 
 			$prince
 				.selectAll('path')
 				.transition()
-				.duration(DURATION)
+				.duration(dur.slow)
 				.ease(EASE)
 				.at('stroke-dashoffset', 0);
 
 			$prince
 				.selectAll('circle')
 				.transition()
-				.duration(SEC)
-				.delay((d, i, n) => (i / n.length) * DURATION)
+				.duration(dur.medium)
+				.delay((d, i, n) => (i / n.length) * dur.slow)
 				.ease(EASE)
 				.at('r', d => (d.bin_death_index === 0 ? MAX_R : MIN_R));
 		};
 
 		const line = getLine({ scaleX, scaleY });
 
-		$personMerge
-			.selectAll('path')
-			.transition()
-			.duration(DURATION)
-			.ease(EASE)
-			.at('d', line)
-			.on('end', d => {
-				if (d[0].pageid === PRINCE_ID) addSpike();
-			});
+		if (reverse) {
+			$personMerge.call(enterCircles, { scaleX, scaleY });
+			$personMerge.call(updatePath, { scaleX, scaleY, render: !reverse });
+			$personMerge
+				.selectAll('path')
+				.transition()
+				.duration(dur.slow)
+				.ease(EASE)
+				.at('d', line)
+				.st('opacity', 1);
+			$personMerge
+				.selectAll('circle')
+				.transition()
+				.duration(dur.slow)
+				.ease(EASE)
+				.st('opacity', 1)
+				.at(
+					'transform',
+					d => `translate(${scaleX(d.date)}, ${scaleY(d.views_adjusted)})`
+				);
+		} else {
+			$personMerge
+				.selectAll('path')
+				.transition()
+				.duration(dur.slow)
+				.ease(EASE)
+				.at('d', line)
+				.st('opacity', 1)
+				.on('end', d => {
+					if (d[0].pageid === PRINCE_ID && !leave) addSpike(true);
+				});
 
-		$personMerge
-			.selectAll('circle')
-			.transition()
-			.duration(DURATION)
-			.ease(EASE)
-			.at(
-				'transform',
-				d => `translate(${scaleX(d.date)}, ${scaleY(d.views_adjusted)})`
-			);
+			$personMerge
+				.selectAll('circle')
+				.transition()
+				.duration(dur.slow)
+				.ease(EASE)
+				.st('opacity', 1)
+				.at(
+					'transform',
+					d => `translate(${scaleX(d.date)}, ${scaleY(d.views_adjusted)})`
+				);
+		}
 
 		// highlight prince
 		$personMerge.classed('is-highlight', d => d.pageid === PRINCE_ID);
 		$personMerge.filter(d => d.pageid === PRINCE_ID).raise();
+
+		// EXIT
+		$person
+			.exit()
+			.transition()
+			.duration(dur.medium)
+			.st('opacity', 0)
+			.remove();
+		// LEAVE
+		if (leave && !reverse) addSpike();
 	},
-	others: () => {
+	others: ({ reverse, leave }) => {
+		if (!reverse && !leave) STEP['prince-spike']({ leave: true });
+		const dur = getDuration({ leave, reverse });
+
 		// DATA
 		const data = peopleData.map(d => ({
 			...d,
 			pageviews: trimPageviews(d.pageviews, { start: -30, end: 0 })
 		}));
-
 		// SCALE
 		data.sort((a, b) =>
 			d3.descending(a.max_views_adjusted, b.max_views_adjusted)
 		);
-
 		const scaleX = getScaleX(pageviewData);
 		const scaleY = getScaleY(pageviewData);
 		const scaleR = getScaleR(data);
-
 		// AXIS
-		updateAxis({ scaleX, scaleY, ticks: null });
-
+		updateAxis({ scaleX, scaleY, dur, ticks: null });
 		// PEOPLE
 		data.sort((a, b) =>
 			d3.ascending(+a.timestamp_of_death, +b.timestamp_of_death)
 		);
-
 		const $person = $people.selectAll('.person').data(data, d => d.pageid);
 		const $personEnter = $person
 			.enter()
 			.append('g.person')
 			.call(enterPerson);
-
 		// PEOPLE
 		const addOthers = () => {
 			const $personMerge = $personEnter.merge($person);
 			$personMerge.call(updatePath, { scaleX, scaleY });
 			$personMerge.call(enterCircles, { scaleX, scaleY, r: 0 });
-
 			$personMerge
 				.selectAll('circle')
 				.transition()
-				.duration(SEC)
+				.duration(dur.medium)
 				.delay(d => {
 					const { index } = peopleData.find(p => p.pageid === d.pageid);
-					return DURATION * (index / peopleData.length);
+					return dur.slow * (index / peopleData.length);
 				})
 				.ease(EASE)
 				.at('r', d => scaleR(d.views_adjusted));
-
 			$personMerge
 				.selectAll('.is-not-death-index')
 				.classed('is-transparent', true);
-
 			$personMerge.selectAll('path').classed('is-transparent', true);
 		};
-
 		const line = getLine({ scaleX, scaleY });
-
 		$person
 			.selectAll('path')
 			.transition()
-			.duration(DURATION)
+			.duration(dur.slow)
 			.ease(EASE)
 			.at('d', line)
 			.st('opacity', 0)
 			.on('end', d => {
-				if (d[0].pageid === PRINCE_ID) addOthers();
+				if (d[0].pageid === PRINCE_ID && !leave) addOthers();
 			});
-
 		$person
 			.selectAll('circle')
 			.transition()
-			.duration(DURATION)
+			.duration(dur.slow)
 			.ease(EASE)
 			.st('opacity', d => (d.bin_death_index === 0 ? 1 : 0))
 			.at(
 				'transform',
 				d => `translate(${scaleX(d.date)}, ${scaleY(d.views_adjusted)})`
 			);
-
 		// highlight prince
 		$person.classed('is-highlight', false);
-
 		// EXIT BEYONCE
 		$person
 			.exit()
 			.transition()
-			.duration(DURATION_EXIT)
+			.duration(dur.fast)
 			.st('opacity', 0)
 			.remove();
+		// LEAVE
+		if (leave && !reverse) addOthers();
 	}
 };
 
@@ -446,9 +522,6 @@ function resize() {
 	});
 	$gVis.at('transform', `translate(${MARGIN.left}, ${MARGIN.top})`);
 	$step.st('padding-bottom', Math.floor(window.innerHeight * 0.98));
-	const lasStep = $step.size() - 1;
-	// $step.filter((d,i) => i === lastStep)
-	// 	.st('margin-bottom', Math.floor(window.innerHeight * 0.98));
 
 	updateStep({});
 }
@@ -459,18 +532,18 @@ function handleStepEnter({ index, element, direction }) {
 	updateStep({ reverse: direction === 'up' });
 }
 
-function handleStepExit({ index, element, direction }) {
-	// updateStep({ reverse: direction === 'up', leave: true });
-	// console.log({ step: 'exit', index, element, direction });
-}
+// function handleStepExit({ index, element, direction }) {
+// 	// updateStep({ reverse: direction === 'up', leave: true });
+// 	// console.log({ step: 'exit', index, element, direction });
+// }
 
 function setupScroller() {
 	scroller
 		.setup({
 			step: $step.nodes()
 		})
-		.onStepEnter(handleStepEnter)
-		.onStepExit(handleStepExit);
+		.onStepEnter(handleStepEnter);
+	// .onStepExit(handleStepExit);
 }
 
 function loadData() {
