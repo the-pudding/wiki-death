@@ -4,6 +4,7 @@ function people(data) {
 	return data.map((d, i) => ({
 		...d,
 		index: i,
+		mean_views_adjusted_bd_1: +d.mean_views_adjusted_bd_1,
 		mean_views_adjusted_bd_2: +d.mean_views_adjusted_bd_2,
 
 		death_views_2: +d.death_views_2,

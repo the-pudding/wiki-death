@@ -13,8 +13,8 @@ function resize() {
 	const width = $body.node().offsetWidth;
 	if (previousWidth !== width) {
 		previousWidth = width;
-		graphicPerspective.resize();
-		// graphicCare.resize();
+		// graphicPerspective.resize();
+		graphicCare.resize();
 	}
 }
 
@@ -39,8 +39,8 @@ function init() {
 	// setup sticky header menu
 	setupStickyHeader();
 	// kick off graphic code
-	graphicPerspective.init();
-	// graphicCare.init();
+	// graphicPerspective.init();
+	graphicCare.init();
 }
 
 init();

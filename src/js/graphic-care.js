@@ -5,6 +5,7 @@ const FONT_SIZE = 12;
 const SEC = 1000;
 const DURATION = SEC * 3;
 const EASE = d3.easeCubicInOut;
+const MAX_WEEKS = 12;
 
 let width = 0;
 let height = 0;
@@ -14,6 +15,8 @@ let pageviewData = null;
 const $section = d3.select('#care');
 const $graphic = $section.select('.graphic');
 const $chart = $graphic.select('.graphic__chart');
+
+const LAST_TIMESTAMP = '20180712'; // UPDATE WITH NEW DATA
 
 function updateDimensions() {
 	const h = window.innerHeight;
@@ -31,49 +34,61 @@ function resize() {
 	// });
 }
 
-function calculateNormal(datum) {
-	const { mean_views_adjusted_before, std } = datum;
-	const views = datum.pageviews
-		.filter(d => d.bin_death_index > 0)
-		.filter(d => d.views_adjusted < mean_views_adjusted_before + std * 2);
-	const match = views.shift();
-
-	return {
-		// ...datum,
-		name: datum.name,
-		std: Math.round(datum.std),
-		mean_views_adjusted_before: Math.round(mean_views_adjusted_before),
-		count_until_norm: match ? match.bin_death_index : 999
-	};
-}
-
 function setupChart() {
-	const withNorm = peopleData.map(calculateNormal);
-	console.table(
-		withNorm.sort((a, b) =>
-			d3.descending(a.count_until_norm, b.count_until_norm)
-		)
-	);
 	const nested = d3
 		.nest()
-		.key(d => d.count_until_norm)
-		.rollup(v => v.length)
-		.entries(withNorm);
-	console.table(nested.sort((a, b) => d3.ascending(+a.key, +b.key)));
+		.key(d => d.week_category)
+		.entries(peopleData)
+		.map(d => ({
+			...d,
+			key: +d.key
+		}));
+
+	const filled = d3.range(MAX_WEEKS + 3).map(i => {
+		const match = nested.find(d => d.key === i);
+		return match || { key: i, values: [] };
+	});
+
+	console.log(filled);
+}
+
+function getWeeksUntilNorm(pageviews) {
+	const len = pageviews.length;
+	const { timestamp } = pageviews[len - 1];
+	if (timestamp === LAST_TIMESTAMP) return null;
+	return Math.floor(len / 7);
+}
+
+function getWeekCategory(week) {
+	if (!week && week !== 0) return MAX_WEEKS + 2;
+	return week <= MAX_WEEKS ? week : MAX_WEEKS + 1;
 }
 
 function loadData() {
 	return new Promise((resolve, reject) => {
-		const filenames = ['people', 'pageviews-bin-2'];
+		const filenames = ['people', 'care'];
 		const filepaths = filenames.map(f => `assets/data/${f}.csv`);
 		d3.loadData(...filepaths, (err, response) => {
 			if (err) reject(err);
 			const tempPeopleData = cleanData.people(response[0]);
 			pageviewData = cleanData.pageview(response[1]);
-			peopleData = tempPeopleData.map(d => ({
-				...d,
-				pageviews: pageviewData.filter(p => p.pageid === d.pageid)
-			}));
+			peopleData = tempPeopleData
+				.map(d => ({
+					...d,
+					pageviews: pageviewData.filter(p => p.pageid === d.pageid)
+				}))
+				.map(d => {
+					const days_until_norm = d.pageviews.length;
+					const weeks_until_norm = getWeeksUntilNorm(d.pageviews);
+					const week_category = getWeekCategory(weeks_until_norm);
+					return {
+						...d,
+						days_until_norm,
+						weeks_until_norm,
+						week_category
+					};
+				});
+
 			resolve();
 		});
 	});

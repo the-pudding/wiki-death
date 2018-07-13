@@ -577,7 +577,6 @@ function loadData() {
 				...d,
 				pageviews: pageviewData.filter(p => p.pageid === d.pageid)
 			}));
-
 			const beyoncePageviews = cleanData.pageview(response[2]);
 			beyonceData = [
 				{
@@ -587,7 +586,6 @@ function loadData() {
 					)
 				}
 			];
-			console.log({ peopleData, pageviewData });
 			resolve();
 		});
 	});
