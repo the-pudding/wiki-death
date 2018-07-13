@@ -1,7 +1,7 @@
 <h3 class='section__hed'>{{copy.perspectiveHed}}</h3>
 <div id='perspective-scroll'>
-	<div class='scroll__graphic'>
-		<div class='graphic__chart'>
+	<figure class='scroll__figure'>
+		<div class='figure__chart'>
 			<svg>
 				<g class='g-axis'>
 					<g class='axis axis--x'></g>
@@ -11,13 +11,13 @@
 					<g class='people'></g>
 				</g>
 			</svg>
-		</div>
-	</div>
-	<div class='scroll__text'>
+		</chart>
+	</figure>
+	<article class='scroll__text'>
 		{{#each copy.perspectiveSteps}}
 		<div class='step' data-step='{{step}}'>
 			<p>{{text}}</p>
 		</div>
 		{{/each}}
-	</div>
+	</article>
 </div>

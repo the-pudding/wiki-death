@@ -2,6 +2,7 @@
 import debounce from 'lodash.debounce';
 import isMobile from './utils/is-mobile';
 import graphicPerspective from './graphic-perspective';
+import graphicCare from './graphic-care';
 
 const $body = d3.select('body');
 let previousWidth = 0;
@@ -13,6 +14,7 @@ function resize() {
 	if (previousWidth !== width) {
 		previousWidth = width;
 		graphicPerspective.resize();
+		// graphicCare.resize();
 	}
 }
 
@@ -38,6 +40,7 @@ function init() {
 	setupStickyHeader();
 	// kick off graphic code
 	graphicPerspective.init();
+	// graphicCare.init();
 }
 
 init();

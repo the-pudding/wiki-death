@@ -2,11 +2,11 @@ import Stickyfill from 'stickyfilljs';
 import scrollama from 'scrollama';
 import cleanData from './clean-data';
 
-const MARGIN = { top: 10, bottom: 40, left: 40, right: 10 };
+const MARGIN = { top: 20, bottom: 40, left: 40, right: 20 };
 const FONT_SIZE = 12;
 const PRINCE_ID = '57317';
-const DATE_MARCH = new Date(2016, 2, 1);
-const DATE_JUNE = new Date(2016, 5, 1);
+const DATE_START = new Date(2016, 2, 1);
+const DATE_END = new Date(2016, 3, 27);
 const MIN_R = 3;
 const MAX_R = 12;
 const SEC = 1000;
@@ -21,11 +21,14 @@ let beyonceData = null;
 let currentStep = 'context';
 
 const $section = d3.select('#perspective');
-const $text = $section.select('.scroll__text');
-const $step = $text.selectAll('.step');
-const $graphic = $section.select('.scroll__graphic');
-const $chart = $graphic.select('.graphic__chart');
+
+const $article = $section.select('article');
+const $step = $article.selectAll('.step');
+
+const $figure = $section.select('figure');
+const $chart = $figure.select('.figure__chart');
 const $svg = $chart.select('svg');
+
 const $gVis = $svg.select('.g-vis');
 const $gAxis = $svg.select('.g-axis');
 const $people = $gVis.select('.people');
@@ -55,7 +58,7 @@ function getScaleY(data = beyonceData[0].pageviews) {
 function getScaleR(data) {
 	return d3
 		.scaleSqrt()
-		.domain(d3.extent(data, d => d.max_views_adjusted))
+		.domain(d3.extent(data, d => d.death_views_adjusted_2))
 		.nice()
 		.range([MIN_R, MAX_R]);
 }
@@ -104,7 +107,7 @@ function updateAxis({ scaleX, scaleY, dur, ticks = d3.timeMonth.every(1) }) {
 		.axisBottom(scaleX)
 		.ticks(ticks)
 		.tickSize(0)
-		.tickPadding(FONT_SIZE * 2)
+		.tickPadding(0)
 		.tickFormat(multiFormat);
 
 	$gAxis
@@ -113,7 +116,10 @@ function updateAxis({ scaleX, scaleY, dur, ticks = d3.timeMonth.every(1) }) {
 		.duration(dur.slow)
 		.ease(EASE)
 		.call(axisX)
-		.at('transform', `translate(${MARGIN.left}, ${height})`);
+		.at(
+			'transform',
+			`translate(${MARGIN.left}, ${height + MARGIN.bottom - FONT_SIZE})`
+		);
 }
 
 function resetLine($person, offset) {
@@ -240,7 +246,7 @@ const STEP = {
 		const dur = getDuration({ leave, reverse });
 
 		// DATA
-		const start = findPrinceStart(DATE_MARCH);
+		const start = findPrinceStart(DATE_START);
 		const data = peopleData
 			.filter(d => d.pageid === PRINCE_ID)
 			.map(d => ({
@@ -316,7 +322,7 @@ const STEP = {
 		const dur = getDuration({ leave, reverse });
 
 		// DATA
-		const start = findPrinceStart(DATE_MARCH);
+		const start = findPrinceStart(DATE_START);
 		const data = peopleData
 			.filter(d => d.pageid === PRINCE_ID)
 			.map(d => ({
@@ -438,11 +444,11 @@ const STEP = {
 		// DATA
 		const data = peopleData.map(d => ({
 			...d,
-			pageviews: trimPageviews(d.pageviews, { start: -30, end: 0 })
+			pageviews: trimPageviews(d.pageviews, { start: -50, end: 0 })
 		}));
 		// SCALE
 		data.sort((a, b) =>
-			d3.descending(a.max_views_adjusted, b.max_views_adjusted)
+			d3.descending(a.death_views_adjusted_2, b.death_views_adjusted_2)
 		);
 		const scaleX = getScaleX(pageviewData);
 		const scaleY = getScaleY(pageviewData);
@@ -521,7 +527,7 @@ function updateDimensions() {
 
 function updateStep({ reverse = true, leave = false }) {
 	console.log({ currentStep, reverse, leave });
-	STEP[currentStep]({ reverse, leave });
+	if (STEP[currentStep]) STEP[currentStep]({ reverse, leave });
 }
 
 function resize() {
@@ -548,7 +554,7 @@ function handleStepEnter({ index, element, direction }) {
 // }
 
 function setupScroller() {
-	Stickyfill.add($graphic.node());
+	Stickyfill.add($figure.node());
 
 	scroller
 		.setup({
@@ -561,7 +567,7 @@ function setupScroller() {
 
 function loadData() {
 	return new Promise((resolve, reject) => {
-		const filenames = ['people', 'pageviews-bin-2', 'beyonce-pageviews-bin-2'];
+		const filenames = ['people', 'perspective', 'beyonce'];
 		const filepaths = filenames.map(f => `assets/data/${f}.csv`);
 		d3.loadData(...filepaths, (err, response) => {
 			if (err) reject(err);
@@ -577,11 +583,11 @@ function loadData() {
 				{
 					pageid: 'beyonce',
 					pageviews: beyoncePageviews.filter(
-						d => d.date >= DATE_MARCH && d.date < DATE_JUNE
+						d => d.date >= DATE_START && d.date < DATE_END
 					)
 				}
 			];
-
+			console.log({ peopleData, pageviewData });
 			resolve();
 		});
 	});

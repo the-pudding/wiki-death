@@ -1,17 +1,17 @@
 #perspective
-	.scroll__graphic
+	figure
 		// background rgba(yellow, 0.5)
 		position sticky
 		top 0
 		padding 1rem
 		transform translate3d(0,0,0)
 
-	.graphic__chart
+	.figure__chart
 		max-width 80rem
 		margin 0 auto
 		// background rgba(green, 0.5)
 
-	.scroll__text
+	article
 		pointer-events none
 		position relative
 		// background rgba(red, 0.5)
@@ -27,7 +27,7 @@
 			box-shadow 0 0 10px 2px rgba($gray, 0.33)
 
 
-	.graphic__chart svg
+	figure svg
 		.axis--x
 			.tick line
 				display none
@@ -52,7 +52,7 @@
 			path
 				fill none
 				stroke $gray
-				stroke-width 3px
+				stroke-width 2px
 				transition stroke 250ms ease-in-out
 				&.is-transparent
 					opacity 0
