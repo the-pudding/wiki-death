@@ -1,0 +1,30 @@
+#change
+	figure
+		// max-height 27.5rem
+		// overflow hidden
+		
+	table
+		set-type-size(x-small, false)
+		margin 0 auto
+	thead
+		tr
+			border-bottom 2px solid $gray-light
+		th
+			text-transform uppercase
+			letter-spacing 0.05em
+			padding 0.25em 0.5em
+		.number
+			text-align right
+	tbody
+		tr
+			border-bottom 1px solid $gray-light
+		td
+			padding 0.5em
+			&:first-child
+				font-weight 500
+			&:nth-child(4)
+				font-weight 600
+
+		.number
+			font-family $mono
+			text-align right
