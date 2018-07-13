@@ -13,8 +13,8 @@ let peopleData = null;
 let pageviewData = null;
 
 const $section = d3.select('#care');
-const $graphic = $section.select('.graphic');
-const $chart = $graphic.select('.graphic__chart');
+const $figure = $section.select('figure');
+const $ul = $figure.select('ul');
 
 const LAST_TIMESTAMP = '20180712'; // UPDATE WITH NEW DATA
 
@@ -49,7 +49,71 @@ function setupChart() {
 		return match || { key: i, values: [] };
 	});
 
-	console.log(filled);
+	const $li = $ul
+		.selectAll('.week')
+		.data(filled)
+		.enter()
+		.append('li.week');
+
+	$li.append('p.label').html(d => {
+		// const suffix = d.key === 1 ? '' : 's';
+		// if (d === MAX_WEEKS + 1) return `${d.key}+ weeks`;
+		// if (d === MAX_WEEKS + 2) return 'Never';
+		// return `${d.key} week${suffix}`;
+		if (d.key === MAX_WEEKS + 1) return `${d.key}+`;
+		if (d.key === MAX_WEEKS + 2) return '???';
+		return `${d.key}&nbsp;`;
+	});
+
+	const $people = $li.append('ul.people');
+
+	$people
+		.selectAll('.person')
+		.data(d => d.values)
+		.enter()
+		.append('li.person')
+		.text(d => d.display.replace(/\(.*\)/g, '').trim());
+}
+
+function colorize(datum) {
+	const $days = d3.select(this);
+	const mean = datum.mean_views_adjusted_bd_1;
+	const std = datum.std_1;
+	const maxViews = d3.max(datum.pageviews, v => v.views_adjusted);
+	const diff = maxViews - mean;
+	const mult = Math.floor(diff / std);
+
+	const scale = d3
+		.scaleLinear()
+		.domain([0, mult])
+		.range([0.1, 1]);
+	$days.selectAll('.day').st('opacity', d => {
+		const val = (d.views_adjusted - mean) / std;
+		return scale(val);
+	});
+}
+
+function setupChart2() {
+	const data = peopleData.filter(d => d.weeks_until_norm);
+
+	data.sort((a, b) => d3.descending(a.days_until_norm, b.days_until_norm));
+	const $person = $figure
+		.select('.heated-bar')
+		.selectAll('.person2')
+		.data(data)
+		.enter()
+		.append('li.person2');
+
+	$person.append('p.label').text(d => d.display.replace(/\(.*\)/g, '').trim());
+	const $days = $person.append('ul.days');
+
+	const $day = $days
+		.selectAll('.day')
+		.data(d => d.pageviews)
+		.enter()
+		.append('li.day');
+
+	$days.each(colorize);
 }
 
 function getWeeksUntilNorm(pageviews) {
@@ -98,6 +162,7 @@ function init() {
 	loadData().then(() => {
 		resize();
 		setupChart();
+		setupChart2();
 	});
 }
 
