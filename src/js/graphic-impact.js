@@ -31,20 +31,6 @@ function resize() {
 		height: height + MARGIN.top + MARGIN.bottom
 	});
 	$gVis.at('transform', `translate(${MARGIN.left}, ${MARGIN.top})`);
-}
-
-function setupChart() {
-	// data
-	peopleData.sort((a, b) => {
-		const ma = d3.median(a.pageviews, v => v.diff_percent);
-		const mb = d3.median(b.pageviews, v => v.diff_percent);
-		return d3.descending(ma, mb);
-	});
-	// const t = peopleData.map(d => d3.max(d.pageviews, v => v.diff_percent));
-
-	// console.log(d3.max(pageviewData, d => d.diff));
-	// console.log(d3.max(pageviewData, d => d.diff_percent));
-	// render
 
 	// scales
 	const extent = d3.extent(pageviewData, d => d.bin_death_index);
@@ -76,39 +62,45 @@ function setupChart() {
 		.curve(d3.curveMonotoneX)
 		.defined(d => d.ma);
 
+	const $person = $gVis.selectAll('.person');
+
+	$person.select('text').at({
+		x: TEXT_WIDTH,
+		y: scaleY.range()[0],
+		'text-anchor': 'end'
+	});
+
+	$person
+		.select('.after--area')
+		.datum(d => d.pageviews)
+		.at('d', area);
+	$person
+		.select('.after--line')
+		.datum(d => d.pageviews)
+		.at('d', line);
+
+	$person.at('transform', (d, i) => `translate(0,${i * MAX_HEIGHT * 0.35})`);
+}
+
+function setupChart() {
+	// data
+	peopleData.sort((a, b) => {
+		const ma = d3.median(a.pageviews, v => v.diff_percent);
+		const mb = d3.median(b.pageviews, v => v.diff_percent);
+		return d3.descending(ma, mb);
+	});
+
 	const $person = $gVis
 		.selectAll('.person')
 		.data(peopleData)
 		.enter()
 		.append('g.person');
 
-	$person
-		.append('text')
-		.text(d => d.display.replace(/\(.*\)/g, '').trim())
-		.at({
-			x: TEXT_WIDTH,
-			y: scaleY.range()[0],
-			'text-anchor': 'end'
-		});
+	$person.append('text').text(d => d.display.replace(/\(.*\)/g, '').trim());
 
-	$person
-		.append('path.after--area')
-		.datum(d => d.pageviews)
-		.at('d', area);
+	$person.append('path.after--area');
 
-	$person
-		.append('path.after--line')
-		.datum(d => d.pageviews)
-		.at('d', line);
-
-	$person.append('line.median').at({
-		x1: 0,
-		y1: scaleY(0),
-		x2: width,
-		y2: scaleY(0)
-	});
-
-	$person.at('transform', (d, i) => `translate(0,${i * MAX_HEIGHT * 0.35})`);
+	$person.append('path.after--line');
 }
 
 function loadData() {
@@ -119,10 +111,21 @@ function loadData() {
 			if (err) reject(err);
 			const tempPeopleData = cleanData.people(response[0]);
 			pageviewData = cleanData.ma(response[1]);
-			peopleData = tempPeopleData.map(d => ({
-				...d,
-				pageviews: pageviewData.filter(p => p.pageid === d.pageid)
-			}));
+			peopleData = tempPeopleData.map(d => {
+				// add last at 0 for smooth viz
+				const pageviews = pageviewData.filter(p => p.pageid === d.pageid);
+				const last = pageviews[pageviews.length - 1];
+				const add = {
+					bin_death_index: last.bin_death_index,
+					diff_percent: 0,
+					ma: 1
+				};
+				pageviews.push(add);
+				return {
+					...d,
+					pageviews
+				};
+			});
 			resolve();
 		});
 	});

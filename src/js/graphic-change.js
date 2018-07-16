@@ -64,10 +64,12 @@ function loadData() {
 	});
 }
 
+function resize() {}
+
 function init() {
 	loadData().then(() => {
 		setupChart();
 	});
 }
 
-export default { init };
+export default { init, resize };

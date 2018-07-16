@@ -1,6 +1,5 @@
 #perspective
 	figure
-		// background rgba(yellow, 0.5)
 		position sticky
 		top 0
 		padding 1rem
@@ -10,10 +9,14 @@
 		width 100%
 
 	.figure__chart
+		position relative
 		width 100%
 		max-width 80rem
 		margin 0 auto
-		// background rgba(green, 0.5)
+		cursor pointer
+
+	// figcaption
+	// 	text-align left
 
 	article
 		pointer-events none
@@ -53,6 +56,9 @@
 
 
 		.person
+			&.is-active
+				circle
+					fill $primary
 			path
 				fill none
 				stroke $gray
@@ -77,3 +83,6 @@
 					stroke $primary
 				circle
 					fill $primary
+
+		.g-voronoi path
+				fill-opacity 0

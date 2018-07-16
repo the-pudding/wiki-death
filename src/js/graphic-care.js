@@ -16,8 +16,6 @@ const $section = d3.select('#care');
 const $figure = $section.select('.figure--chart');
 const $ul = $figure.select('ul');
 
-const LAST_TIMESTAMP = '20180712'; // UPDATE WITH NEW DATA
-
 function updateDimensions() {
 	const h = window.innerHeight;
 	// height = Math.floor(h * 0.8) - MARGIN.top - MARGIN.bottom;
@@ -116,10 +114,10 @@ function setupChart2() {
 	$days.each(colorize);
 }
 
-function getWeeksUntilNorm(pageviews) {
+function getWeeksUntilNorm({ last_updated, pageviews }) {
 	const len = pageviews.length;
 	const { timestamp } = pageviews[len - 1];
-	if (timestamp === LAST_TIMESTAMP) return null;
+	if (timestamp === last_updated) return null;
 	return Math.floor(len / 7);
 }
 
@@ -143,7 +141,7 @@ function loadData() {
 				}))
 				.map(d => {
 					const days_until_norm = d.pageviews.length;
-					const weeks_until_norm = getWeeksUntilNorm(d.pageviews);
+					const weeks_until_norm = getWeeksUntilNorm(d);
 					const week_category = getWeekCategory(weeks_until_norm);
 					return {
 						...d,
@@ -152,7 +150,6 @@ function loadData() {
 						week_category
 					};
 				});
-
 			resolve();
 		});
 	});

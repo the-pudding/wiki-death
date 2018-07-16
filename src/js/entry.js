@@ -16,8 +16,9 @@ function resize() {
 	if (previousWidth !== width) {
 		previousWidth = width;
 		graphicPerspective.resize();
-		graphicCare.resize();
-		graphicImpact.resize();
+		// graphicChange.resize();
+		// graphicCare.resize();
+		// graphicImpact.resize();
 	}
 }
 
@@ -44,9 +45,9 @@ function init() {
 
 	// kick off graphic code
 	graphicPerspective.init();
-	graphicChange.init();
-	graphicCare.init();
-	graphicImpact.init();
+	// graphicChange.init();
+	// graphicCare.init();
+	// graphicImpact.init();
 }
 
 init();

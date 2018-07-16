@@ -1,6 +1,7 @@
 import Stickyfill from 'stickyfilljs';
 import scrollama from 'scrollama';
 import cleanData from './clean-data';
+import tooltip from './tooltip'
 
 const MARGIN = { top: 20, bottom: 40, left: 40, right: 20 };
 const FONT_SIZE = 12;
@@ -10,7 +11,7 @@ const DATE_END = new Date(2016, 3, 27);
 const MIN_R = 3;
 const MAX_R = 12;
 const SEC = 1000;
-const DURATION = SEC * 3;
+const DURATION = SEC;
 const EASE = d3.easeCubicInOut;
 const HEADER_HEIGHT = d3.select('header').node().offsetHeight;
 
@@ -33,9 +34,13 @@ const $svg = $chart.select('svg');
 
 const $gVis = $svg.select('.g-vis');
 const $gAxis = $svg.select('.g-axis');
+const $gVor = $svg.select('.g-voronoi');
 const $people = $gVis.select('.people');
 
+let $tip = null;
+
 const scroller = scrollama();
+const voronoi = d3.voronoi();
 
 // helper functions
 function getScaleX(data = beyonceData[0].pageviews) {
@@ -79,7 +84,7 @@ function updateAxis({ scaleX, scaleY, dur, ticks = d3.timeMonth.every(1) }) {
 		.axisLeft(scaleY)
 		.tickFormat((val, i) => {
 			const formatted = d3.format('.2s')(val);
-			const suffix = i === 6 ? ' pageviews' : '';
+			const suffix = i === 6 ? ' adjusted pageviews' : '';
 			return `${formatted}${suffix}`;
 		})
 		.tickSize(-(width + MARGIN.left))
@@ -216,6 +221,18 @@ function getDuration({ leave, reverse }) {
 		medium,
 		fast
 	};
+}
+
+function handleVorEnter(d) {
+	const {pageid} = d.data
+	const datum = peopleData.find(v => v.pageid === pageid)
+	$people.selectAll('.person').classed('is-active', v => v.pageid === pageid)
+	const pos  = {x: 50, y: 100}
+	tooltip.show({el: $tip, d: datum, pos})
+}
+
+function handleVorExit(d) {
+	// console.log('exit', d);
 }
 
 // step render
@@ -481,7 +498,7 @@ const STEP = {
 		// PEOPLE
 		const addOthers = () => {
 			const $personMerge = $personEnter.merge($person);
-			$personMerge.call(updatePath, { scaleX, scaleY });
+			// $personMerge.call(updatePath, { scaleX, scaleY });
 			$personMerge.call(enterCircles, { scaleX, scaleY, r: 0 });
 			$personMerge
 				.selectAll('circle')
@@ -530,6 +547,30 @@ const STEP = {
 			.remove();
 		// LEAVE
 		if (leave && !reverse) addOthers();
+
+		// VORONOI
+		voronoi
+			.x(d => scaleX(d.date))
+			.y(d => scaleY(d.views_adjusted))
+			.extent([
+				[-MARGIN.left, -MARGIN.top],
+				[width + MARGIN.left, height + MARGIN.top]
+			]);
+
+		const $vorPath = $gVor.selectAll('path');
+		const vorData = data.map(d =>
+			d.pageviews.find(v => v.bin_death_index === 0)
+		);
+		const polygons = voronoi.polygons(vorData);
+
+		$vorPath
+			.data(polygons)
+			.enter()
+			.append('path')
+			.on('mouseenter', handleVorEnter)
+			.on('mouseout', handleVorExit)
+			.merge($vorPath)
+			.at('d', d => (d ? `M${d.join('L')}Z` : null));
 	}
 };
 
@@ -549,7 +590,8 @@ function resize() {
 
 	$figure.st({
 		height: innerHeight,
-		top: HEADER_HEIGHT
+		top: HEADER_HEIGHT,
+		'padding-bottom': HEADER_HEIGHT
 	});
 
 	$svg.at({
@@ -558,6 +600,7 @@ function resize() {
 	});
 
 	$gVis.at('transform', `translate(${MARGIN.left}, ${MARGIN.top})`);
+	$gVor.at('transform', `translate(${MARGIN.left}, ${MARGIN.top})`);
 
 	// step height and padding
 	const h = Math.floor(innerHeight * 0.99);
@@ -567,16 +610,11 @@ function resize() {
 	updateStep({});
 }
 
-function handleStepEnter({ index, element, direction }) {
+function handleStepEnter({ element, direction }) {
 	// console.log({ step: 'enter', index, element, direction });
 	currentStep = d3.select(element).at('data-step');
 	updateStep({ reverse: direction === 'up' });
 }
-
-// function handleStepExit({ index, element, direction }) {
-// 	// updateStep({ reverse: direction === 'up', leave: true });
-// 	// console.log({ step: 'exit', index, element, direction });
-// }
 
 function setupScroller() {
 	Stickyfill.add($figure.node());
@@ -588,6 +626,10 @@ function setupScroller() {
 		})
 		.onStepEnter(handleStepEnter);
 	// .onStepExit(handleStepExit);
+}
+
+function setupTooltip() {
+	$tip = tooltip.init({container: $chart})
 }
 
 function loadData() {
@@ -620,6 +662,7 @@ function init() {
 	loadData().then(() => {
 		resize();
 		setupScroller();
+		setupTooltip();
 	});
 }
 
