@@ -6,8 +6,9 @@
 		max-width 60rem
 		margin 0 auto
 		padding-top 5rem
-		font-weight 400
+		font-weight 600
 		text-align center
+		display none
 		set-type-size('xx-large', true)
 		+mq('bp-3')
 			set-type-size('xxx-large', true)
@@ -15,12 +16,15 @@
 			set-type-size('xxxx-large', true)
 	
 	&__byline
-		max-width $column-width
+		max-width $column-width * 1.67
 		margin 0 auto
-		padding-top 5rem
-		padding-bottom 1.5rem
-		text-align center
+		padding-top 3rem
+		padding-bottom 0rem
+		// text-align center
 		set-type-size('small', true)
+		time
+			margin-right 0.5em
+
 		
 	&__dek
 		max-width $column-width
@@ -28,7 +32,11 @@
 		padding-top 1.5rem
 		text-align center
 		set-type-size('medium', true)
+		display none
 
 	&__prelude
-		max-width $column-width
+		max-width $column-width * 1.67
 		margin 0 auto
+		
+		p
+			set-type-size('xx-large')
