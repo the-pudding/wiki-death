@@ -13,7 +13,7 @@ let peopleData = null;
 let pageviewData = null;
 
 const $section = d3.select('#care');
-const $figure = $section.select('figure');
+const $figure = $section.select('.figure--chart');
 const $ul = $figure.select('ul');
 
 const LAST_TIMESTAMP = '20180712'; // UPDATE WITH NEW DATA
@@ -162,7 +162,7 @@ function init() {
 	loadData().then(() => {
 		resize();
 		setupChart();
-		setupChart2();
+		// setupChart2();
 	});
 }
 

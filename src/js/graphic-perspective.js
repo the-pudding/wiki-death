@@ -12,9 +12,11 @@ const MAX_R = 12;
 const SEC = 1000;
 const DURATION = SEC * 3;
 const EASE = d3.easeCubicInOut;
+const HEADER_HEIGHT = d3.select('header').node().offsetHeight;
 
 let width = 0;
 let height = 0;
+let innerHeight = 0;
 let peopleData = null;
 let pageviewData = null;
 let beyonceData = null;
@@ -80,7 +82,8 @@ function updateAxis({ scaleX, scaleY, dur, ticks = d3.timeMonth.every(1) }) {
 			const suffix = i === 6 ? ' pageviews' : '';
 			return `${formatted}${suffix}`;
 		})
-		.tickSize(-width)
+		.tickSize(-(width + MARGIN.left))
+		.tickPadding(MARGIN.left)
 		.ticks(5);
 
 	$gAxis
@@ -92,10 +95,21 @@ function updateAxis({ scaleX, scaleY, dur, ticks = d3.timeMonth.every(1) }) {
 		.at('transform', `translate(${MARGIN.left}, ${MARGIN.top})`);
 
 	$gAxis
-		.select('.axis--y .tick:last-of-type')
-		.select('text')
+		.selectAll('.axis--y text')
 		.at('text-anchor', 'start')
-		.at('transform', `translate(${-MARGIN.left + 12}, 0)`); // 3 = default tick padding
+		.at('y', -FONT_SIZE / 2);
+
+	$gAxis
+		.selectAll('.axis--y line')
+		.at('transform', `translate(${-MARGIN.left}, 0)`);
+
+	const $lastTick = $gAxis.select('.axis--y .tick:last-of-type');
+
+	const $lastText = $lastTick.select('text');
+
+	// $lastText;
+	// .at('text-anchor', 'start')
+	// .at('transform', `translate(${-MARGIN.left + 12}, 0)`);
 
 	function multiFormat(date) {
 		return (d3.timeYear(date) < date
@@ -217,7 +231,7 @@ const STEP = {
 		const scaleY = getScaleY();
 
 		// AXIS
-		updateAxis({ scaleX, scaleY, dur });
+		updateAxis({ scaleX, scaleY, dur: { slow: 0 } });
 
 		// PEOPLE
 		const $person = $people.selectAll('.person').data(data, d => d.pageid);
@@ -306,8 +320,12 @@ const STEP = {
 			$prince
 				.selectAll('circle')
 				.transition()
-				.duration(dur.medium)
-				.delay((d, i, n) => dur.slow + (i / n.length) * dur.fast)
+				.duration(dur.fast)
+				.delay((d, i, n) => {
+					const v = dur.slow * EASE(i / n.length);
+					console.log(v);
+					return v;
+				})
 				.ease(EASE)
 				.at('r', d => (d.bin_death_index === 0 ? MAX_R : MIN_R));
 		}
@@ -520,8 +538,8 @@ const STEP = {
 };
 
 function updateDimensions() {
-	const h = window.innerHeight;
-	height = Math.floor(h * 0.8) - MARGIN.top - MARGIN.bottom;
+	innerHeight = window.innerHeight;
+	height = Math.floor(innerHeight * 0.8) - MARGIN.top - MARGIN.bottom;
 	width = $chart.node().offsetWidth - MARGIN.left - MARGIN.right;
 }
 
@@ -532,12 +550,23 @@ function updateStep({ reverse = true, leave = false }) {
 
 function resize() {
 	updateDimensions();
+
+	$figure.st({
+		height: innerHeight,
+		top: HEADER_HEIGHT
+	});
+
 	$svg.at({
 		width: width + MARGIN.left + MARGIN.right,
 		height: height + MARGIN.top + MARGIN.bottom
 	});
+
 	$gVis.at('transform', `translate(${MARGIN.left}, ${MARGIN.top})`);
-	$step.st('padding-bottom', Math.floor(window.innerHeight * 0.98));
+
+	// step height and padding
+	const h = Math.floor(innerHeight * 0.99);
+	$step.st('padding-bottom', h);
+	$step.filter((d, i) => i === 0).st('margin-top', -h * 0.67);
 
 	updateStep({});
 }

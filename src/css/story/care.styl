@@ -1,12 +1,24 @@
 #care
-	video
-		max-width $column-width
-		margin 0 auto
-		display none
+	figure.figure--video
+		video
+			max-width 33rem
+			margin 0 auto
+
+		figcaption
+			max-width 33rem
+			margin 0.25em auto
+			text-align center
+			color $gray-dark
 	
-	figure
+	figure.figure--chart
 		max-width 70rem
 		margin 0 auto
+
+		.figure__hed
+			margin 0 auto
+			max-width $column-width
+			padding 0 1rem
+			margin-bottom 3rem
 		
 		.people
 			display flex
@@ -27,13 +39,15 @@
 			border-bottom 2px solid $off-white
 		
 		p.label
-			set-type-size(root, false)
+			set-type-size(small, false)
 			font-family $mono
 			line-height 1
 			margin 0
 			min-width 3rem
 			text-align right
 			padding-right 0.5em
+			color $primary
+			font-weight 600
 
 
 	.heated-bar

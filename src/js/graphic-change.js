@@ -10,10 +10,17 @@ function formatComma(number) {
 	return d3.format(',')(Math.round(number));
 }
 
+function formatPercent(number) {
+	return d3.format(',.0%')(number);
+}
+
 function setupChart() {
 	peopleData.sort((a, b) => d3.descending(a.change, b.change));
 	const extent = d3.extent(peopleData, d => d.change);
-	const scale = d3.scaleLinear().domain(extent);
+	const scale = d3
+		.scaleLinear()
+		.domain(extent)
+		.range([0.1, 0.9]);
 
 	const $tr = $tbody
 		.selectAll('tr')
@@ -30,7 +37,10 @@ function setupChart() {
 		.text(d => formatComma(d.death_views_adjusted_2));
 	$tr
 		.append('td.change.number')
-		.text(d => formatComma(d.change))
+		.text((d, i) => {
+			const f = formatPercent(d.change);
+			return f.replace('%', '');
+		})
 		.st('background-color', d => `rgba(255, 0, 0, ${scale(d.change)})`);
 }
 

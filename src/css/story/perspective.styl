@@ -5,8 +5,12 @@
 		top 0
 		padding 1rem
 		transform translate3d(0,0,0)
+		display flex
+		align-items center
+		width 100%
 
 	.figure__chart
+		width 100%
 		max-width 80rem
 		margin 0 auto
 		// background rgba(green, 0.5)
@@ -58,8 +62,8 @@
 					opacity 0
 			
 			circle
-				stroke $gray
-				fill $bg
+				stroke $bg
+				fill $gray
 				stroke-width 2px
 
 				&.is-transparent
@@ -72,4 +76,4 @@
 				path
 					stroke $primary
 				circle
-					stroke $primary
+					fill $primary

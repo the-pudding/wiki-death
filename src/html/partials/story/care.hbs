@@ -1,8 +1,19 @@
-<h3 class='section__hed'>{{copy.careHed}}</h3>
-<video src='assets/video/akecheta-web.mp4' muted preload loop autoplay></video>
+{{!-- <h3 class='section__hed'>{{copy.careHed}}</h3> --}}
 
-<figure>
-	<h3 class='figure_hed'>Weeks until "normal" traffic</h3>
+<figure class='figure--video'>
+	<video src='assets/video/akecheta-web.mp4' muted preload loop autoplay></video>
+	<figcaption class='x-small tk-atlas'>{{{copy.careCaption}}}</figcaption>
+</figure>
+
+
+<div class='prose'>
+	{{#each copy.changeIntro}}
+	<p>{{{value}}}</p>
+	{{/each}}
+</div>
+
+<figure class='figure--chart'>
+	<p class='figure__hed'>{{{copy.careChartTitle}}}</p>
 	<ul class='tk-atlas'></ul>
 
 	<ul class='heated-bar'>

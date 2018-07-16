@@ -1,11 +1,20 @@
 #change
 	figure
+		max-width 40rem
+		margin 0 auto
 		// max-height 27.5rem
 		// overflow hidden
 		
 	table
 		set-type-size(x-small, false)
 		margin 0 auto
+		table-layout fixed
+	th,td
+		width 33%
+		vertical-align bottom
+		&:first-child
+			min-width 9rem
+			width 9rem
 	thead
 		tr
 			border-bottom 2px solid $gray-light
@@ -13,6 +22,7 @@
 			text-transform uppercase
 			letter-spacing 0.05em
 			padding 0.25em 0.5em
+			set-type-size(xx-small, false)
 		.number
 			text-align right
 	tbody
