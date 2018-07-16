@@ -321,11 +321,7 @@ const STEP = {
 				.selectAll('circle')
 				.transition()
 				.duration(dur.fast)
-				.delay((d, i, n) => {
-					const v = dur.slow * EASE(i / n.length);
-					console.log(v);
-					return v;
-				})
+				.delay((d, i, n) => dur.slow * EASE(i / n.length))
 				.ease(EASE)
 				.at('r', d => (d.bin_death_index === 0 ? MAX_R : MIN_R));
 		}

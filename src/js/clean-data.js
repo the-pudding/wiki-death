@@ -34,4 +34,17 @@ function pageview(data) {
 	}));
 }
 
-export default { people, pageview };
+function ma(data) {
+	return data.map(d => ({
+		...d,
+		pageid: d.pageid,
+		bin_death_index: +d.bin_death_index,
+		ma: +d.ma,
+		diff: +d.diff,
+		diff_percent: +d.diff_percent,
+		diff_views: +d.diff_views,
+		diff_percent_views: +d.diff_percent_views
+	}));
+}
+
+export default { people, pageview, ma };

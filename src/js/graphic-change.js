@@ -1,4 +1,5 @@
 import cleanData from './clean-data';
+import color from './color';
 
 let peopleData = null;
 
@@ -41,7 +42,10 @@ function setupChart() {
 			const f = formatPercent(d.change);
 			return f.replace('%', '');
 		})
-		.st('background-color', d => `rgba(255, 0, 0, ${scale(d.change)})`);
+		.st('background-color', d => {
+			const [r, g, b] = color.primary.rgb;
+			return `rgba(${r},${g}, ${b}, ${scale(d.change)})`;
+		});
 }
 
 function loadData() {

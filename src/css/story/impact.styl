@@ -1,2 +1,19 @@
 #impact
-	// 
+	.figure__chart
+		max-width 60rem
+		margin 0 auto
+
+	.person
+		path.after--line
+			stroke darken($primary, 30)
+			stroke-width 2px
+			fill none
+		
+		path.after--area
+			fill $primary
+			stroke none
+
+		text
+			set-type-size(x-small, false)
+			font-weight 500
+			fill $fg

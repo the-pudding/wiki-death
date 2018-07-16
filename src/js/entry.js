@@ -4,6 +4,7 @@ import isMobile from './utils/is-mobile';
 import graphicPerspective from './graphic-perspective';
 import graphicCare from './graphic-care';
 import graphicChange from './graphic-change';
+import graphicImpact from './graphic-impact';
 
 const $body = d3.select('body');
 let previousWidth = 0;
@@ -14,8 +15,9 @@ function resize() {
 	const width = $body.node().offsetWidth;
 	if (previousWidth !== width) {
 		previousWidth = width;
-		// graphicPerspective.resize();
+		graphicPerspective.resize();
 		graphicCare.resize();
+		graphicImpact.resize();
 	}
 }
 
@@ -39,10 +41,12 @@ function init() {
 	window.addEventListener('resize', debounce(resize, 150));
 	// setup sticky header menu
 	setupStickyHeader();
+
 	// kick off graphic code
-	// graphicPerspective.init();
+	graphicPerspective.init();
 	graphicChange.init();
 	graphicCare.init();
+	graphicImpact.init();
 }
 
 init();
