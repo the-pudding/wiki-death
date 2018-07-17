@@ -13,11 +13,13 @@ main, main p
 
 svg text
 	font-family $sans
+	font-size 12px
 
 .axis text
 	text-transform uppercase
 	font-weight 500
 	fill $gray
+	font-size 11px
 
 section
 	padding 3rem 1rem 0 1rem
@@ -29,3 +31,14 @@ section
 	padding 1rem
 	margin 0 auto
 	background-color $gray-dark
+
+.g-annotation
+	transition opacity 250ms ease-in-out
+	pointer-events none
+	.annotation-note-title
+		fill $gray-light
+		font-weight 500
+		font-size 13px
+
+	.connector
+		stroke $gray-light

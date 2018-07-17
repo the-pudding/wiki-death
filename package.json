@@ -17,6 +17,7 @@
 		"babel-preset-stage-1": "^6.24.1",
 		"babel-register": "^6.26.0",
 		"browser-sync": "^2.24.5",
+		"d3-svg-annotation": "2.3.0",
 		"del": "^3.0.0",
 		"eslint": "^5.0.1",
 		"eslint-config-airbnb-base": "^13.0.0",

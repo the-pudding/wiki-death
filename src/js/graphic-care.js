@@ -21,8 +21,9 @@ let $tip = null;
 
 function handleNameEnter(datum) {
 	const m = d3.mouse(this);
+	// const sz = this.offsetWidth / 2;
 	const [x, y] = d3.mouse($ul.node());
-	const pos = { x, y };
+	const pos = { x: x - m[0], y };
 	tooltip.show({ el: $tip, d: datum, pos });
 }
 

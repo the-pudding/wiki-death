@@ -3,16 +3,18 @@
 		max-width 40rem
 		margin 0 auto
 		position relative
-		// max-height 27.5rem
-		// overflow hidden
-		
+		&.is-truncated
+			max-height 38.5rem
+			overflow hidden
+
 	table
 		set-type-size(x-small, false)
 		margin 0 auto
 		table-layout fixed
 		position relative
+
 	th,td
-		width 33%
+		width 25%
 		vertical-align bottom
 		&:first-child
 			min-width 9rem
@@ -41,3 +43,15 @@
 		.number
 			font-family $mono
 			text-align right
+
+	.toggle-table
+		text-align center
+		margin-top 1rem
+		.btn
+			background-color transparent
+			color $fg
+			border 2px solid $fg
+			padding 0.25em 0.5em
+			width 5rem
+			text-transform uppercase
+			font-weight 600

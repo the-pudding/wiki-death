@@ -5,6 +5,7 @@ const FONT_SIZE = 12;
 const REM = 16;
 const MAX_HEIGHT = FONT_SIZE * 5;
 const TEXT_WIDTH = REM * 8;
+const OFFSET = 0.4;
 
 let width = 0;
 let height = 0;
@@ -21,7 +22,7 @@ const $gAxis = $svg.select('.g-axis');
 function updateDimensions() {
 	const h = window.innerHeight;
 	width = $chart.node().offsetWidth - MARGIN.left - MARGIN.right;
-	height = MAX_HEIGHT * peopleData.length;
+	height = MAX_HEIGHT * peopleData.length * OFFSET + MARGIN.top + MARGIN.bottom;
 }
 
 function resize() {
@@ -79,7 +80,7 @@ function resize() {
 		.datum(d => d.pageviews)
 		.at('d', line);
 
-	$person.at('transform', (d, i) => `translate(0,${i * MAX_HEIGHT * 0.35})`);
+	$person.at('transform', (d, i) => `translate(0,${i * MAX_HEIGHT * OFFSET})`);
 }
 
 function setupChart() {

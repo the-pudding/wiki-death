@@ -1,5 +1,6 @@
 import Stickyfill from 'stickyfilljs';
 import scrollama from 'scrollama';
+import * as Annotate from 'd3-svg-annotation';
 import cleanData from './clean-data';
 import tooltip from './tooltip';
 
@@ -8,7 +9,7 @@ const FONT_SIZE = 12;
 const PRINCE_ID = '57317';
 const DATE_START = new Date(2016, 2, 1);
 const DATE_END = new Date(2016, 3, 27);
-const MIN_R = 3;
+const MIN_R = 4;
 const MAX_R = 12;
 const SEC = 1000;
 const DURATION = SEC;
@@ -108,14 +109,6 @@ function updateAxis({ scaleX, scaleY, dur, ticks = d3.timeMonth.every(1) }) {
 		.selectAll('.axis--y line')
 		.at('transform', `translate(${-MARGIN.left}, 0)`);
 
-	const $lastTick = $gAxis.select('.axis--y .tick:last-of-type');
-
-	const $lastText = $lastTick.select('text');
-
-	// $lastText;
-	// .at('text-anchor', 'start')
-	// .at('transform', `translate(${-MARGIN.left + 12}, 0)`);
-
 	function multiFormat(date) {
 		return (d3.timeYear(date) < date
 			? d3.timeFormat('%b')
@@ -172,7 +165,8 @@ function enterCircles($person, { scaleX, scaleY, r = MIN_R }) {
 			k => k.timestamp
 		);
 
-	const $enter = $c.enter()
+	const $enter = $c
+		.enter()
 		.append('circle')
 		.classed('is-not-death-index', d => d.bin_death_index !== 0)
 		.at({
@@ -183,9 +177,10 @@ function enterCircles($person, { scaleX, scaleY, r = MIN_R }) {
 		.at(
 			'transform',
 			d => `translate(${scaleX(d.date)}, ${scaleY(d.views_adjusted)})`
-		)
-	
-	$enter.merge($c)
+		);
+
+	$enter
+		.merge($c)
 		.at('data-x', d => scaleX(d.date))
 		.at('data-y', d => scaleY(d.views_adjusted));
 
@@ -242,6 +237,61 @@ function handleVorExit(d) {
 	// console.log('exit', d);
 }
 
+function createAnnotation({ scaleX, scaleY, annoData, dur = 0, delay = 0 }) {
+	$gVis.select('.g-annotation').remove();
+	const $anno = $gVis.append('g.g-annotation');
+	$anno.st('opacity', 0);
+
+	// const type = Annotate.annotationCustomType(Annotate.annotationLabel, {
+	// 	className: 'custom',
+	// 	connector: { type: 'line' },
+	// 	note: {
+	// 		align: 'middle',
+	// 		orientation: 'leftRight'
+	// 	}
+	// });
+
+	const type = Annotate.annotationCustomType(Annotate.annotationCalloutCircle, {
+		className: 'custom',
+		connector: { type: 'line' },
+		note: {
+			lineType: 'horizontal',
+			align: 'dynamic'
+		}
+	});
+
+	const annotations = annoData.map(d => ({
+		note: {
+			title: d.title,
+			padding: d.padding,
+			wrap: 120
+		},
+		data: { date: d.value.date, views_adjusted: d.value.views_adjusted },
+		dx: d.dx,
+		dy: d.dy,
+		subject: {
+			radius: d.r,
+			radiusPadding: MIN_R
+		}
+	}));
+
+	const makeAnnotations = Annotate.annotation()
+		.type(type)
+		.notePadding(0)
+		.accessors({
+			x: d => scaleX(d.date),
+			y: d => scaleY(d.views_adjusted)
+		})
+		.annotations(annotations);
+
+	$anno.call(makeAnnotations);
+	$anno
+		.transition()
+		.duration(dur)
+		.delay(delay)
+		.ease(EASE)
+		.st('opacity', 1);
+}
 // step render
 const STEP = {
 	context: ({ reverse, leave }) => {
@@ -269,6 +319,69 @@ const STEP = {
 
 		// highlight beyonce
 		$personMerge.classed('is-highlight', true);
+
+		$personMerge
+			.selectAll('circle')
+			.transition()
+			.duration(dur.fast)
+			.ease(EASE)
+			.at('r', MIN_R);
+
+		// ANNOTATION
+		createAnnotation({ scaleX, scaleY, annoData: [] });
+
+		// EXIT
+		$person
+			.exit()
+			.transition()
+			.duration(dur.fast)
+			.st('opacity', 0)
+			.remove();
+	},
+	lemonade: ({ reverse, leave }) => {
+		const dur = getDuration({ leave, reverse });
+
+		// DATA
+		const data = beyonceData;
+		const annoData = [
+			{
+				value: data[0].pageviews[data[0].pageviews.length - 1],
+				title: 'Lemonade is released',
+				padding: FONT_SIZE * 0.5,
+				dx: -50,
+				dy: 50,
+				r: MAX_R * 1.5
+			}
+		];
+
+		// SCALE
+		const scaleX = getScaleX();
+		const scaleY = getScaleY();
+
+		// AXIS
+		updateAxis({ scaleX, scaleY, dur: { slow: 0 } });
+
+		// PEOPLE
+		const $person = $people.selectAll('.person').data(data, d => d.pageid);
+		const $personEnter = $person
+			.enter()
+			.append('g.person')
+			.call(enterPerson);
+		const $personMerge = $personEnter.merge($person);
+		$personMerge.call(updatePath, { scaleX, scaleY });
+		$personMerge.call(enterCircles, { scaleX, scaleY });
+
+		// highlight beyonce
+		$personMerge.classed('is-highlight', true);
+		$personMerge
+			.select('circle:last-of-type')
+			.transition()
+			.duration(dur.fast)
+			.ease(EASE)
+			.at('r', MAX_R);
+
+		// ANNOTATION
+		createAnnotation({ scaleX, scaleY, annoData, dur: dur.fast });
 
 		// EXIT
 		$person
@@ -349,6 +462,9 @@ const STEP = {
 				.ease(EASE)
 				.at('r', d => (d.bin_death_index === 0 ? MAX_R : MIN_R));
 		}
+
+		// ANNOTATION
+		createAnnotation({ scaleX, scaleY, annoData: [] });
 
 		// highlight prince
 		$personMerge.classed('is-highlight', d => d.pageid === PRINCE_ID);
@@ -465,6 +581,9 @@ const STEP = {
 		$personMerge.classed('is-highlight', d => d.pageid === PRINCE_ID);
 		$personMerge.filter(d => d.pageid === PRINCE_ID).raise();
 
+		// ANNOTATION
+		createAnnotation({ scaleX, scaleY, annoData: [] });
+
 		// EXIT
 		$person
 			.exit()
@@ -484,10 +603,49 @@ const STEP = {
 			...d,
 			pageviews: trimPageviews(d.pageviews, { start: -50, end: 0 })
 		}));
+
+		const median = 251793881.5 * 2;
+		const annoData = [
+			{
+				value: {
+					date: new Date(2016, 5, 20),
+					views_adjusted: (1354216 / 500201369) * median
+				},
+				title: 'LeBron James (NBA Finals)',
+				padding: 0,
+				dx: Math.floor(width * 0.01),
+				dy: -Math.floor(width * 0.07),
+				r: MAX_R / 2
+			},
+			{
+				value: {
+					date: new Date(2017, 0, 20),
+					views_adjusted: (3635774 / 538696302) * median
+				},
+				title: 'Donald Trump (inauguration)',
+				padding: 0,
+				dx: Math.floor(width * 0.02),
+				dy: -Math.floor(width * 0.03),
+				r: MAX_R / 2
+			},
+			{
+				value: {
+					date: new Date(2018, 4, 19),
+					views_adjusted: (4503531 / 530076204) * median
+				},
+				title: ' Meghan Markle (royal wedding)',
+				padding: 0,
+				dx: -Math.floor(width * 0.05),
+				dy: -Math.floor(width * 0.05),
+				r: MAX_R / 2
+			}
+		];
+
 		// SCALE
 		data.sort((a, b) =>
 			d3.descending(a.death_views_adjusted_2, b.death_views_adjusted_2)
 		);
+
 		const scaleX = getScaleX(pageviewData);
 		const scaleY = getScaleY(pageviewData);
 		const scaleR = getScaleR(data);
@@ -521,6 +679,9 @@ const STEP = {
 				.selectAll('.is-not-death-index')
 				.classed('is-transparent', true);
 			$personMerge.selectAll('path').classed('is-transparent', true);
+
+			// ANNOTATION
+			createAnnotation({ scaleX, scaleY, annoData, delay: dur.slow });
 		};
 		const line = getLine({ scaleX, scaleY });
 		$person
@@ -553,7 +714,11 @@ const STEP = {
 			.st('opacity', 0)
 			.remove();
 		// LEAVE
-		if (leave && !reverse) addOthers();
+		if (leave && !reverse) {
+			addOthers();
+			// ANNOTATION
+			createAnnotation({ scaleX, scaleY, annoData: [] });
+		}
 
 		// VORONOI
 		voronoi
@@ -610,9 +775,12 @@ function resize() {
 	$gVor.at('transform', `translate(${MARGIN.left}, ${MARGIN.top})`);
 
 	// step height and padding
-	const h = Math.floor(innerHeight * 0.99);
-	$step.st('padding-bottom', h);
-	$step.filter((d, i) => i === 0).st('margin-top', -h * 0.67);
+	const stepCount = $step.size();
+	$step.st('padding-bottom', innerHeight);
+	$step.filter((d, i) => i === 0).st('margin-top', -innerHeight * 0.67);
+	$step
+		.filter((d, i) => i === stepCount - 1)
+		.st('padding-bottom', innerHeight * 1.2);
 
 	updateStep({});
 }
@@ -638,8 +806,8 @@ function setupScroller() {
 function setupTooltip() {
 	$tip = tooltip.init({ container: $chart });
 	$svg.on('mouseleave', () => {
-		tooltip.hide($tip)
-	})
+		tooltip.hide($tip);
+	});
 }
 
 function loadData() {

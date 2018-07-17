@@ -8,6 +8,7 @@ const $section = d3.select('#change');
 const $figure = $section.select('figure');
 const $table = $figure.select('table');
 const $tbody = $table.select('tbody');
+const $btn = $section.select('.btn');
 
 let $tip = null;
 
@@ -74,6 +75,22 @@ function setupTooltip() {
 	});
 }
 
+function setupToggle() {
+	$btn.on('click', () => {
+		const truncated = $figure.classed('is-truncated');
+		const text = truncated ? 'Collapse' : 'Show All';
+		$btn.text(text);
+		$figure.classed('is-truncated', !truncated);
+
+		if (!truncated) {
+			const y = +$btn.at('data-y');
+			window.scrollTo(0, y);
+		}
+
+		$btn.at('data-y', window.scrollY);
+	});
+}
+
 function loadData() {
 	return new Promise((resolve, reject) => {
 		const filenames = ['people'];
@@ -99,6 +116,7 @@ function init() {
 		resize();
 		setupTooltip();
 		setupChart();
+		setupToggle();
 	});
 }
 
