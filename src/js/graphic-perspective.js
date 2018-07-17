@@ -1,7 +1,7 @@
 import Stickyfill from 'stickyfilljs';
 import scrollama from 'scrollama';
 import cleanData from './clean-data';
-import tooltip from './tooltip'
+import tooltip from './tooltip';
 
 const MARGIN = { top: 20, bottom: 40, left: 40, right: 20 };
 const FONT_SIZE = 12;
@@ -172,7 +172,7 @@ function enterCircles($person, { scaleX, scaleY, r = MIN_R }) {
 			k => k.timestamp
 		);
 
-	$c.enter()
+	const $enter = $c.enter()
 		.append('circle')
 		.classed('is-not-death-index', d => d.bin_death_index !== 0)
 		.at({
@@ -183,7 +183,11 @@ function enterCircles($person, { scaleX, scaleY, r = MIN_R }) {
 		.at(
 			'transform',
 			d => `translate(${scaleX(d.date)}, ${scaleY(d.views_adjusted)})`
-		);
+		)
+	
+	$enter.merge($c)
+		.at('data-x', d => scaleX(d.date))
+		.at('data-y', d => scaleY(d.views_adjusted));
 
 	$c.exit().remove();
 }
@@ -224,11 +228,14 @@ function getDuration({ leave, reverse }) {
 }
 
 function handleVorEnter(d) {
-	const {pageid} = d.data
-	const datum = peopleData.find(v => v.pageid === pageid)
-	$people.selectAll('.person').classed('is-active', v => v.pageid === pageid)
-	const pos  = {x: 50, y: 100}
-	tooltip.show({el: $tip, d: datum, pos})
+	const { pageid } = d.data;
+	const datum = peopleData.find(v => v.pageid === pageid);
+	$people.selectAll('.person').classed('is-active', v => v.pageid === pageid);
+	const $person = d3.select(`[data-id='${pageid}'`);
+	const x = +$person.select('circle:last-of-type').at('data-x') + MARGIN.left;
+	const y = +$person.select('circle:last-of-type').at('data-y') + MARGIN.top;
+	const pos = { x, y };
+	tooltip.show({ el: $tip, d: datum, pos });
 }
 
 function handleVorExit(d) {
@@ -629,7 +636,10 @@ function setupScroller() {
 }
 
 function setupTooltip() {
-	$tip = tooltip.init({container: $chart})
+	$tip = tooltip.init({ container: $chart });
+	$svg.on('mouseleave', () => {
+		tooltip.hide($tip)
+	})
 }
 
 function loadData() {
@@ -653,6 +663,7 @@ function loadData() {
 					)
 				}
 			];
+
 			resolve();
 		});
 	});

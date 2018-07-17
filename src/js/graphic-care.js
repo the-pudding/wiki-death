@@ -70,7 +70,7 @@ function setupChart() {
 		.data(d => d.values)
 		.enter()
 		.append('li.person')
-		.text(d => d.display.replace(/\(.*\)/g, '').trim());
+		.text(d => d.display);
 }
 
 function colorize(datum) {

@@ -4,6 +4,8 @@ function people(data) {
 	return data.map((d, i) => ({
 		...d,
 		index: i,
+		display: d.display.replace(/\(.*\)/g, '').trim(),
+
 		mean_views_adjusted_bd_1: +d.mean_views_adjusted_bd_1,
 		mean_views_adjusted_bd_2: +d.mean_views_adjusted_bd_2,
 

@@ -29,7 +29,7 @@ function setupChart() {
 		.enter()
 		.append('tr');
 
-	$tr.append('td.name').text(d => d.display.replace(/\(.*\)/g, '').trim());
+	$tr.append('td.name').text(d => d.display);
 	$tr
 		.append('td.avg.number')
 		.text(d => formatComma(d.median_views_adjusted_bd_2));

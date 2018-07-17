@@ -96,7 +96,7 @@ function setupChart() {
 		.enter()
 		.append('g.person');
 
-	$person.append('text').text(d => d.display.replace(/\(.*\)/g, '').trim());
+	$person.append('text').text(d => d.display);
 
 	$person.append('path.after--area');
 

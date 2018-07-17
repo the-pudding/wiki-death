@@ -1,17 +1,51 @@
+.tooltip--hidden
+	position absolute
+	top 0
+	left 0
+	z-index set-index(overlay)
+	opacity 0
+	width 20rem
+	pointer-events none
+	box-shadow 0 0 10px 2px rgba($fg, 0.0)
+	padding 1rem
+	transform translate(-50%, -110%)
+
 .tooltip
 	position absolute
 	top 0
 	left 0
 	z-index set-index(overlay)
 	background rgba($bg, 0.9)
-	width 25rem
+	width 20rem
 	box-shadow 0 0 10px 2px rgba($fg, 0.25)
 	padding 1rem
+	pointer-events none
+	visibility hidden
+	transition top 250ms ease-in-out, left 250ms ease-in-out
+	&.is-center
+		transform translate(-50%, -110%)
+	&.is-left
+		transform translate(0%, -110%)
+	&.is-right
+		transform translate(-100%, -110%)
+	&.is-visible
+		visibility visible
 	p
 		set-type-size(small)
 		font-family $sans
 		margin 0
 	
+	.display
+		display flex
+		justify-content space-between
+		margin-bottom 0.5rem
+	.name
+		font-weight 600
 	.thumbnail
 		width 4rem
+		height 4rem
 		display inline-block
+		float left
+		margin-right 0.75em
+		background-size contain
+		background-position center center
