@@ -1,15 +1,3 @@
-.tooltip--hidden
-	position absolute
-	top 0
-	left 0
-	z-index set-index(overlay)
-	opacity 0
-	width 20rem
-	pointer-events none
-	box-shadow 0 0 10px 2px rgba($fg, 0.0)
-	padding 1rem
-	transform translate(-50%, -110%)
-
 .tooltip
 	position absolute
 	top 0
@@ -22,12 +10,19 @@
 	pointer-events none
 	visibility hidden
 	transition top 250ms ease-in-out, left 250ms ease-in-out
+	transform translate(-50%, -115%)
 	&.is-center
-		transform translate(-50%, -110%)
+		transform translate(-50%, -115%)
+		&.is-bottom
+			transform translate(-50%, 15%)
 	&.is-left
-		transform translate(0%, -110%)
+		transform translate(0%, -115%)
+		&.is-bottom
+			transform translate(0%, 15%)
 	&.is-right
-		transform translate(-100%, -110%)
+		transform translate(-100%, -115%)
+		&.is-bottom
+			transform translate(-100%, 15%)
 	&.is-visible
 		visibility visible
 	p
@@ -49,3 +44,14 @@
 		margin-right 0.75em
 		background-size contain
 		background-position center center
+		background-color $gray-dark
+		border 1px solid $gray-dark
+		border-radius 2px
+
+
+	&--hidden
+		opacity 0
+		pointer-events none
+		transform translate(-50%, -115%)
+		background red
+		transition none

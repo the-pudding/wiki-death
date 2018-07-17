@@ -8,16 +8,19 @@ function getPos({ el, pos }) {
 		top: pos.y,
 		left: pos.x
 	});
-	const { top, bottom, left, right } = el[1].node().getBoundingClientRect();
+	const { top, left, right } = el[1].node().getBoundingClientRect();
 
 	const topDiff = top - HEADER_HEIGHT;
-	const t = topDiff < 0 ? topDiff : 0;
 
 	const className = {
 		center: true,
 		left: false,
-		right: false
+		right: false,
+		bottom: false
 	};
+
+	if (topDiff < 0) className.bottom = true;
+
 	if (right > window.innerWidth - MARGIN) {
 		className.center = false;
 		className.right = true;
@@ -27,11 +30,11 @@ function getPos({ el, pos }) {
 		className.left = true;
 	}
 
-	return { top: pos.y + t, className };
+	return className;
 }
 
 function hide(el) {
-	el[0].tip.classed('is-visible', false);
+	el[0].classed('is-visible', false);
 }
 
 function show({ el, d, pos }) {
@@ -52,25 +55,25 @@ function show({ el, d, pos }) {
 			.st('background-image', `url(${d.thumbnail_source})`);
 	});
 
-	el[1].st({
-		top: pos.y,
-		left: pos.x
-	});
-
-	const { top, className } = getPos({ el, pos });
 	const left = pos.x;
+	const top = pos.y;
+
+	el[1].st({ top, left });
+
+	const className = getPos({ el, pos });
 
 	el[0]
 		.st({ top, left })
 		.classed('is-visible', true)
 		.classed('is-center', className.center)
 		.classed('is-right', className.right)
-		.classed('is-left', className.left);
+		.classed('is-left', className.left)
+		.classed('is-bottom', className.bottom);
 }
 
 function init({ container }) {
 	const tip = container.append('div.tooltip');
-	const tipH = container.append('div.tooltip--hidden');
+	const tipH = container.append('div.tooltip.tooltip--hidden');
 	const el = [tip, tipH];
 
 	el.forEach($el => {
