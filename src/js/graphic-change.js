@@ -1,11 +1,17 @@
 import cleanData from './clean-data';
 import color from './color';
+import tooltip from './tooltip';
 
 let peopleData = null;
 
 const $section = d3.select('#change');
 const $figure = $section.select('figure');
-const $tbody = $figure.select('tbody');
+const $table = $figure.select('table');
+const $tbody = $table.select('tbody');
+
+let $tip = null;
+
+let theadHeight = 0;
 
 function formatComma(number) {
 	return d3.format(',')(Math.round(number));
@@ -13,6 +19,13 @@ function formatComma(number) {
 
 function formatPercent(number) {
 	return d3.format(',.0%')(number);
+}
+
+function handleNameEnter(datum) {
+	const m = d3.mouse(this);
+	const [x, y] = d3.mouse($table.node());
+	const pos = { x: 0, y: y - m[1] + theadHeight };
+	tooltip.show({ el: $tip, d: datum, pos });
 }
 
 function setupChart() {
@@ -29,7 +42,13 @@ function setupChart() {
 		.enter()
 		.append('tr');
 
-	$tr.append('td.name').text(d => d.display);
+	$tr
+		.append('td.name')
+		.text(d => d.display)
+		.on('mouseenter', handleNameEnter)
+		.on('mouseleave', () => {
+			tooltip.hide($tip);
+		});
 	$tr
 		.append('td.avg.number')
 		.text(d => formatComma(d.median_views_adjusted_bd_2));
@@ -48,6 +67,13 @@ function setupChart() {
 		});
 }
 
+function setupTooltip() {
+	$tip = tooltip.init({ container: $table });
+	$table.on('mouseleave', () => {
+		tooltip.hide($tip);
+	});
+}
+
 function loadData() {
 	return new Promise((resolve, reject) => {
 		const filenames = ['people'];
@@ -64,10 +90,14 @@ function loadData() {
 	});
 }
 
-function resize() {}
+function resize() {
+	theadHeight = $table.select('thead').node().offsetHeight;
+}
 
 function init() {
 	loadData().then(() => {
+		resize();
+		setupTooltip();
 		setupChart();
 	});
 }

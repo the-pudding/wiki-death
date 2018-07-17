@@ -1,4 +1,5 @@
 import cleanData from './clean-data';
+import tooltip from './tooltip';
 
 const MARGIN = { top: 20, bottom: 40, left: 40, right: 20 };
 const FONT_SIZE = 12;
@@ -15,6 +16,15 @@ let pageviewData = null;
 const $section = d3.select('#care');
 const $figure = $section.select('.figure--chart');
 const $ul = $figure.select('ul');
+
+let $tip = null;
+
+function handleNameEnter(datum) {
+	const m = d3.mouse(this);
+	const [x, y] = d3.mouse($ul.node());
+	const pos = { x, y };
+	tooltip.show({ el: $tip, d: datum, pos });
+}
 
 function updateDimensions() {
 	const h = window.innerHeight;
@@ -70,7 +80,11 @@ function setupChart() {
 		.data(d => d.values)
 		.enter()
 		.append('li.person')
-		.text(d => d.display);
+		.text(d => d.display)
+		.on('mouseenter', handleNameEnter)
+		.on('mouseleave', () => {
+			tooltip.hide($tip);
+		});
 }
 
 function colorize(datum) {
@@ -102,7 +116,8 @@ function setupChart2() {
 		.enter()
 		.append('li.person2');
 
-	$person.append('p.label').text(d => d.display.replace(/\(.*\)/g, '').trim());
+	$person.append('p.label').text(d => d.display);
+
 	const $days = $person.append('ul.days');
 
 	const $day = $days
@@ -124,6 +139,13 @@ function getWeeksUntilNorm({ last_updated, pageviews }) {
 function getWeekCategory(week) {
 	if (!week && week !== 0) return MAX_WEEKS + 2;
 	return week <= MAX_WEEKS ? week : MAX_WEEKS + 1;
+}
+
+function setupTooltip() {
+	$tip = tooltip.init({ container: $ul });
+	$ul.on('mouseleave', () => {
+		tooltip.hide($tip);
+	});
 }
 
 function loadData() {
@@ -159,7 +181,7 @@ function init() {
 	loadData().then(() => {
 		resize();
 		setupChart();
-		// setupChart2();
+		setupTooltip();
 	});
 }
 
