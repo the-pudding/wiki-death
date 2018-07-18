@@ -12,7 +12,7 @@ const DATE_END = new Date(2016, 3, 27);
 const MIN_R = 4;
 const MAX_R = 12;
 const SEC = 1000;
-const DURATION = SEC;
+const DURATION = SEC * 3;
 const EASE = d3.easeCubicInOut;
 const HEADER_HEIGHT = d3.select('header').node().offsetHeight;
 
