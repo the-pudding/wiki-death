@@ -5,13 +5,23 @@
 		position relative
 
 	.person
+		cursor pointer
+		&.is-inactive
+			path.after--area
+				fill lighten($primary, 40)
+				&:nth-child(even)
+					fill lighten($primary, 40)
+			path.after--line
+				stroke lighten($primary, 30)
+			text
+				opacity 0.35
 		path.after--line
-			stroke darken($primary, 30)
-			stroke-width 2px
+			stroke darken($primary, 20)
+			stroke-width 1.5px
 			fill none
 		
 		path.after--area
-			fill $primary
+			fill lighten($primary, 10)
 			stroke none
 
 		text
@@ -19,3 +29,22 @@
 			font-weight 500
 			fill $fg
 			cursor pointer
+
+		&:nth-child(even)
+			path.after--area
+				fill darken($primary, 10)
+
+	.interaction
+		fill-opacity 0
+
+	figure svg
+		.g-axis
+			// .tick:first-of-type
+			// 	display none
+			.tick line
+				stroke-opacity 0.5
+				stroke $gs-medium
+				stroke-width 1px
+				stroke-dasharray 4px 4px
+			path
+				display none 

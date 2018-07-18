@@ -17,8 +17,8 @@ function resize() {
 		previousWidth = width;
 		// graphicPerspective.resize();
 		// graphicChange.resize();
-		graphicCare.resize();
-		// graphicImpact.resize();
+		// graphicCare.resize();
+		graphicImpact.resize();
 	}
 }
 
@@ -46,8 +46,8 @@ function init() {
 	// kick off graphic code
 	// graphicPerspective.init();
 	// graphicChange.init();
-	graphicCare.init();
-	// graphicImpact.init();
+	// graphicCare.init();
+	graphicImpact.init();
 }
 
 init();

@@ -18,8 +18,9 @@ svg text
 .axis text
 	text-transform uppercase
 	font-weight 500
-	fill $gray
+	fill $gs-dark
 	font-size 11px
+	font-family $mono
 
 section
 	padding 3rem 1rem 0 1rem
@@ -30,15 +31,16 @@ section
 .method
 	padding 1rem
 	margin 0 auto
-	background-color $gray-dark
+	background-color $gs-light
 
 .g-annotation
 	transition opacity 250ms ease-in-out
 	pointer-events none
+
 	.annotation-note-title
-		fill $gray-light
+		fill $gs-dark
 		font-weight 500
 		font-size 13px
 
-	.connector
-		stroke $gray-light
+	.connector, .note-line
+		stroke $gs-dark

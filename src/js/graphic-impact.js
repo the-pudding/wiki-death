@@ -1,4 +1,5 @@
 import cleanData from './clean-data';
+import color from './color';
 
 const MARGIN = { top: 60, bottom: 10, left: 10, right: 10 };
 const FONT_SIZE = 12;
@@ -9,6 +10,7 @@ const OFFSET = 0.4;
 
 let width = 0;
 let height = 0;
+let rectH = 0;
 let peopleData = null;
 let pageviewData = null;
 
@@ -18,6 +20,20 @@ const $chart = $figure.select('.figure__chart');
 const $svg = $chart.select('svg');
 const $gVis = $svg.select('.g-vis');
 const $gAxis = $svg.select('.g-axis');
+
+let $person = null;
+
+function handleMouseMove() {
+	const [x, y] = d3.mouse(this);
+	const len = peopleData.length;
+	const index = Math.max(0, Math.min(Math.floor((y / rectH) * len), len - 1));
+	$person.classed('is-inactive', (d, i) => i !== index);
+	// d3.select(this).raise();
+}
+
+function handleMouseExit() {
+	$person.classed('is-inactive', false);
+}
 
 function updateDimensions() {
 	const h = window.innerHeight;
@@ -63,8 +79,6 @@ function resize() {
 		.curve(d3.curveMonotoneX)
 		.defined(d => d.ma);
 
-	const $person = $gVis.selectAll('.person');
-
 	$person.select('text').at({
 		x: TEXT_WIDTH,
 		y: scaleY.range()[0],
@@ -81,6 +95,38 @@ function resize() {
 		.at('d', line);
 
 	$person.at('transform', (d, i) => `translate(0,${i * MAX_HEIGHT * OFFSET})`);
+
+	rectH = height - MARGIN.top + MARGIN.bottom + MAX_HEIGHT * OFFSET;
+
+	$gVis.select('.interaction').at({
+		x: 0,
+		y: 0,
+		width,
+		height: rectH
+	});
+
+	const axis = d3
+		.axisTop(scaleX)
+		.tickValues([30, 60, 90, 120, 150])
+		.tickSize(-height)
+		.tickFormat((val, i) => {
+			const suffix = i === 0 ? ' days' : '';
+			return `${val}${suffix}`;
+		});
+	// .tickPadding(0)
+	// .tickFormat(multiFormat);
+
+	$gAxis
+		.select('.axis')
+		.call(axis)
+		.at(
+			'transform',
+			`translate(${MARGIN.left}, ${MARGIN.top - MAX_HEIGHT * OFFSET})`
+		);
+	$gAxis
+		.select('.tick')
+		.select('text')
+		.at('text-anchor', 'start');
 }
 
 function setupChart() {
@@ -91,17 +137,25 @@ function setupChart() {
 		return d3.descending(ma, mb);
 	});
 
-	const $person = $gVis
-		.selectAll('.person')
+	$person = $gVis.selectAll('.person');
+
+	const $personEnter = $person
 		.data(peopleData)
 		.enter()
 		.append('g.person');
+
+	$person = $personEnter.merge($person);
 
 	$person.append('text').text(d => d.display);
 
 	$person.append('path.after--area');
 
 	$person.append('path.after--line');
+
+	$gVis
+		.append('rect.interaction')
+		.on('mousemove', handleMouseMove)
+		.on('mouseleave', handleMouseExit);
 }
 
 function loadData() {
@@ -134,6 +188,7 @@ function loadData() {
 
 function init() {
 	loadData().then(() => {
+		console.log(peopleData);
 		updateDimensions();
 		setupChart();
 		resize();
