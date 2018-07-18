@@ -1,7 +1,10 @@
 #impact
-	.figure__chart
+	figure
 		max-width 60rem
 		margin 0 auto
+	figcaption
+		max-width $column-width
+	.figure__chart
 		position relative
 
 	.person
@@ -26,9 +29,8 @@
 
 		text
 			set-type-size(x-small, false)
-			font-weight 500
+			font-weight 400
 			fill $fg
-			cursor pointer
 
 		&:nth-child(even)
 			path.after--area

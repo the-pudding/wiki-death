@@ -1,10 +1,10 @@
 #change
 	figure
-		max-width 40rem
+		max-width 33.5rem
 		margin 0 auto
 		position relative
 		&.is-truncated
-			max-height 38.5rem
+			max-height 36rem
 			overflow hidden
 
 	table
@@ -21,12 +21,13 @@
 			width 9rem
 	thead
 		tr
-			border-bottom 2px solid $gs-light
+			// border-bottom 2px solid $gs-light
 		th
 			text-transform uppercase
 			letter-spacing 0.05em
 			padding 0.25em 0.5em
-			set-type-size(xx-small, false)
+			set-type-size(xxx-small, false)
+			font-weight 600
 		.number
 			text-align right
 	tbody
@@ -34,11 +35,14 @@
 			border-bottom 1px solid $gs-light
 		td
 			padding 0.5em
+			color lighten($fg, 10)
 			&:first-child
-				font-weight 500
+				font-weight 400
 				cursor pointer
+				color $fg
 			&:nth-child(4)
 				font-weight 600
+				color darken($fg, 10)
 
 		.number
 			font-family $mono
@@ -50,8 +54,22 @@
 		.btn
 			background-color transparent
 			color $fg
-			border 2px solid $fg
+			border 1px solid $fg
 			padding 0.25em 0.5em
-			width 5rem
+			width 7rem
 			text-transform uppercase
 			font-weight 600
+			transition background-color 250ms
+			&:hover
+				background-color rgba($primary, 0.2)
+
+	
+	.show-more
+		position absolute
+		width 100%
+		height 5rem
+		background linear-gradient(rgba($bg, 0), $bg)
+		bottom 0
+		visibility hidden
+		&.is-visible
+			visibility visible

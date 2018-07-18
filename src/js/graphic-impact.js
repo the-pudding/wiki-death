@@ -1,7 +1,7 @@
 import cleanData from './clean-data';
 import color from './color';
 
-const MARGIN = { top: 60, bottom: 10, left: 10, right: 10 };
+const MARGIN = { top: 160, bottom: 10, left: 0, right: 20 };
 const FONT_SIZE = 12;
 const REM = 16;
 const MAX_HEIGHT = FONT_SIZE * 5;
@@ -38,7 +38,7 @@ function handleMouseExit() {
 function updateDimensions() {
 	const h = window.innerHeight;
 	width = $chart.node().offsetWidth - MARGIN.left - MARGIN.right;
-	height = MAX_HEIGHT * peopleData.length * OFFSET + MARGIN.top + MARGIN.bottom;
+	height = MAX_HEIGHT * OFFSET * peopleData.length + MARGIN.top + MARGIN.bottom;
 }
 
 function resize() {
@@ -159,6 +159,7 @@ function setupChart() {
 }
 
 function loadData() {
+	const NUM_DAYS = 92;
 	return new Promise((resolve, reject) => {
 		const filenames = ['people', 'impact'];
 		const filepaths = filenames.map(f => `assets/data/${f}.csv`);
@@ -166,21 +167,23 @@ function loadData() {
 			if (err) reject(err);
 			const tempPeopleData = cleanData.people(response[0]);
 			pageviewData = cleanData.ma(response[1]);
-			peopleData = tempPeopleData.map(d => {
-				// add last at 0 for smooth viz
-				const pageviews = pageviewData.filter(p => p.pageid === d.pageid);
-				const last = pageviews[pageviews.length - 1];
-				const add = {
-					bin_death_index: last.bin_death_index,
-					diff_percent: 0,
-					ma: 1
-				};
-				pageviews.push(add);
-				return {
-					...d,
-					pageviews
-				};
-			});
+			peopleData = tempPeopleData
+				.map(d => {
+					// add last at 0 for smooth viz
+					const pageviews = pageviewData.filter(p => p.pageid === d.pageid);
+					const last = pageviews[pageviews.length - 1];
+					const add = {
+						bin_death_index: last.bin_death_index,
+						diff_percent: 0,
+						ma: 1
+					};
+					pageviews.push(add);
+					return {
+						...d,
+						pageviews
+					};
+				})
+				.filter(d => d.pageviews.length === NUM_DAYS);
 			resolve();
 		});
 	});
@@ -188,7 +191,6 @@ function loadData() {
 
 function init() {
 	loadData().then(() => {
-		console.log(peopleData);
 		updateDimensions();
 		setupChart();
 		resize();

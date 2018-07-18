@@ -1,6 +1,5 @@
 import cleanData from './clean-data';
 import color from './color';
-import tooltip from './tooltip';
 
 let peopleData = null;
 
@@ -9,8 +8,6 @@ const $figure = $section.select('figure');
 const $table = $figure.select('table');
 const $tbody = $table.select('tbody');
 const $btn = $section.select('.btn');
-
-let $tip = null;
 
 let theadHeight = 0;
 
@@ -22,20 +19,13 @@ function formatPercent(number) {
 	return d3.format(',.0%')(number);
 }
 
-function handleNameEnter(datum) {
-	const m = d3.mouse(this);
-	const [x, y] = d3.mouse($table.node());
-	const pos = { x: 0, y: y - m[1] + theadHeight };
-	tooltip.show({ el: $tip, d: datum, pos });
-}
-
 function setupChart() {
 	peopleData.sort((a, b) => d3.descending(a.change, b.change));
 	const extent = d3.extent(peopleData, d => d.change);
 	const scale = d3
 		.scaleLinear()
 		.domain(extent)
-		.range([0.1, 0.9]);
+		.range([0, 0.8]);
 
 	const $tr = $tbody
 		.selectAll('tr')
@@ -43,13 +33,8 @@ function setupChart() {
 		.enter()
 		.append('tr');
 
-	$tr
-		.append('td.name')
-		.text(d => d.display)
-		.on('mouseenter', handleNameEnter)
-		.on('mouseleave', () => {
-			tooltip.hide($tip);
-		});
+	$tr.append('td.name').text(d => d.display);
+
 	$tr
 		.append('td.avg.number')
 		.text(d => formatComma(d.median_views_adjusted_bd_2));
@@ -68,17 +53,10 @@ function setupChart() {
 		});
 }
 
-function setupTooltip() {
-	$tip = tooltip.init({ container: $table });
-	$table.on('mouseleave', () => {
-		tooltip.hide($tip);
-	});
-}
-
 function setupToggle() {
 	$btn.on('click', () => {
 		const truncated = $figure.classed('is-truncated');
-		const text = truncated ? 'Collapse' : 'Show All';
+		const text = truncated ? 'Show Fewer' : 'Show More';
 		$btn.text(text);
 		$figure.classed('is-truncated', !truncated);
 
@@ -88,6 +66,7 @@ function setupToggle() {
 		}
 
 		$btn.at('data-y', window.scrollY);
+		$figure.select('.show-more').classed('is-visible', !truncated);
 	});
 }
 
@@ -114,7 +93,6 @@ function resize() {
 function init() {
 	loadData().then(() => {
 		resize();
-		setupTooltip();
 		setupChart();
 		setupToggle();
 	});

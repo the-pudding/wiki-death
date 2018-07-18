@@ -13,7 +13,8 @@
 		width 100%
 		max-width 80rem
 		margin 0 auto
-		cursor pointer
+		&.is-hover
+			cursor pointer
 
 	figcaption
 		max-width $column-width
@@ -70,7 +71,6 @@
 			circle
 				stroke $bg
 				fill $gs-medium
-				stroke-width 2px
 
 				&.is-transparent
 					opacity 0
