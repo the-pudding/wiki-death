@@ -47,7 +47,7 @@
 		"request": "^2.87.0",
 		"require-dir": "^1.0.0",
 		"run-sequence": "^2.2.0",
-		"scrollama": "1.4.1",
+		"scrollama": "1.4.2",
 		"source-map": "^0.7.3",
 		"stickyfilljs": "2.0.5",
 		"superagent": "^3.8.3",

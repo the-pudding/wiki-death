@@ -154,6 +154,16 @@ function enterPerson($person) {
 	$person.append('g.circles');
 }
 
+function exitPerson($person, dur) {
+	// EXIT
+	$person
+		.exit()
+		.transition()
+		.duration(dur)
+		.st('opacity', 0)
+		.remove();
+}
+
 function enterCircles($person, { scaleX, scaleY, r = MIN_R }) {
 	const $c = $person
 		.select('.circles')
@@ -295,9 +305,11 @@ function createAnnotation({ scaleX, scaleY, annoData, dur = 0, delay = 0 }) {
 		.ease(EASE)
 		.st('opacity', 1);
 }
+
 // step render
 const STEP = {
 	context: ({ reverse, leave }) => {
+		// console.log('context', { reverse, leave });
 		const dur = getDuration({ leave, reverse });
 
 		// DATA
@@ -334,15 +346,11 @@ const STEP = {
 		// ANNOTATION
 		createAnnotation({ scaleX, scaleY, annoData: [] });
 
-		// EXIT
-		$person
-			.exit()
-			.transition()
-			.duration(dur.fast)
-			.st('opacity', 0)
-			.remove();
+		exitPerson($person, dur.fast);
 	},
 	lemonade: ({ reverse, leave }) => {
+		// console.log('lemonade', { reverse, leave });
+		if (!reverse && !leave) STEP.context({ leave: true });
 		const dur = getDuration({ leave, reverse });
 
 		// DATA
@@ -388,16 +396,11 @@ const STEP = {
 		// ANNOTATION
 		createAnnotation({ scaleX, scaleY, annoData, dur: dur.fast });
 
-		// EXIT
-		$person
-			.exit()
-			.transition()
-			.duration(dur.fast)
-			.st('opacity', 0)
-			.remove();
+		exitPerson($person, dur.fast);
 	},
 	'prince-before': ({ reverse, leave }) => {
-		if (!reverse && !leave) STEP.context({ leave: true });
+		// console.log('prince-before', { reverse, leave });
+		if (!reverse && !leave) STEP.lemonade({ leave: true });
 
 		const dur = getDuration({ leave, reverse });
 
@@ -420,12 +423,13 @@ const STEP = {
 
 		// PEOPLE
 		const $person = $people.selectAll('.person').data(data, d => d.pageid);
+
 		const $personEnter = $person
 			.enter()
 			.append('g.person')
 			.call(enterPerson);
 		const $personMerge = $personEnter.merge($person);
-		$personMerge.call(enterCircles, { scaleX, scaleY, r: 0 });
+		$personMerge.call(enterCircles, { scaleX, scaleY, r: MIN_R });
 		$personMerge.call(updatePath, { scaleX, scaleY, render: !reverse });
 
 		// TRANSITION
@@ -437,6 +441,7 @@ const STEP = {
 				.duration(dur.slow)
 				.ease(EASE)
 				.at('d', line)
+				.at('stroke-dashoffset', 0)
 				.st('opacity', 1);
 
 			$personMerge
@@ -445,6 +450,7 @@ const STEP = {
 				.duration(dur.slow)
 				.ease(EASE)
 				.st('opacity', 1)
+				.at('r', MIN_R)
 				.at(
 					'transform',
 					d => `translate(${scaleX(d.date)}, ${scaleY(d.views_adjusted)})`
@@ -461,6 +467,7 @@ const STEP = {
 
 			$prince
 				.selectAll('circle')
+				.at('r', 0)
 				.transition()
 				.duration(dur.fast)
 				.delay((d, i, n) => dur.slow * EASE(i / n.length))
@@ -470,6 +477,8 @@ const STEP = {
 					'stroke-width',
 					d => (d.bin_death_index === 0 ? MAX_R / 2 : MIN_R / 2)
 				);
+			
+			
 		}
 
 		// ANNOTATION
@@ -478,8 +487,11 @@ const STEP = {
 		// highlight prince
 		$personMerge.classed('is-highlight', d => d.pageid === PRINCE_ID);
 		$personMerge.filter(d => d.pageid === PRINCE_ID).raise();
+
+		exitPerson($person, dur.fast);
 	},
 	'prince-spike': ({ reverse, leave }) => {
+		// console.log('prince-spike', { reverse, leave });
 		if (!reverse && !leave) STEP['prince-before']({ leave: true });
 
 		const dur = getDuration({ leave, reverse });
@@ -511,7 +523,7 @@ const STEP = {
 		const $personMerge = $personEnter.merge($person);
 
 		// TRANSITION
-		const addSpike = end => {
+		const addSpike = () => {
 			const $prince = $personMerge.filter(d => d.pageid === PRINCE_ID);
 
 			const previousLen = $prince
@@ -527,7 +539,7 @@ const STEP = {
 			$prince
 				.selectAll('path')
 				.transition()
-				.duration(dur.slow)
+				.duration(leave ? 0 : dur.slow)
 				.ease(EASE)
 				.at('stroke-dashoffset', 0);
 
@@ -549,19 +561,26 @@ const STEP = {
 		if (reverse) {
 			$personMerge.call(enterCircles, { scaleX, scaleY });
 			$personMerge.call(updatePath, { scaleX, scaleY, render: !reverse });
+			// const $prince = $personMerge.filter(d => d.pageid === PRINCE_ID);
+			// $prince.call(resetLine);
 			$personMerge
 				.selectAll('path')
-				.transition()
-				.duration(dur.slow)
-				.ease(EASE)
 				.at('d', line)
+				.at('stroke-dashoffset', 0)
+				.at('stroke-dasharray', '0 0')
+				.transition()
+				.duration(dur.fast)
+				.delay(dur.slow)
+				.ease(EASE)
 				.st('opacity', 1);
 			$personMerge
 				.selectAll('circle')
 				.transition()
-				.duration(dur.slow)
+				.duration(d => (d.bin_death_index === 0 ? dur.slow : dur.fast))
+				.delay(d => (d.bin_death_index === 0 ? 0 : dur.slow))
 				.ease(EASE)
 				.st('opacity', 1)
+				.at('r', d => (d.bin_death_index === 0 ? MAX_R : MIN_R))
 				.at(
 					'transform',
 					d => `translate(${scaleX(d.date)}, ${scaleY(d.views_adjusted)})`
@@ -598,23 +617,19 @@ const STEP = {
 		createAnnotation({ scaleX, scaleY, annoData: [] });
 
 		// EXIT
-		$person
-			.exit()
-			.transition()
-			.duration(dur.medium)
-			.st('opacity', 0)
-			.remove();
+		exitPerson($person);
 		// LEAVE
 		if (leave && !reverse) addSpike();
 	},
 	others: ({ reverse, leave }) => {
+		// console.log('others', { reverse, leave });
 		if (!reverse && !leave) STEP['prince-spike']({ leave: true });
 		const dur = getDuration({ leave, reverse });
 
 		// DATA
 		const data = peopleData.map(d => ({
 			...d,
-			pageviews: trimPageviews(d.pageviews, { start: -50, end: 0 })
+			pageviews: trimPageviews(d.pageviews, { start: 0, end: 0 })
 		}));
 
 		// SCALE
@@ -637,6 +652,7 @@ const STEP = {
 			.append('g.person')
 			.call(enterPerson);
 		// PEOPLE
+
 		const addOthers = () => {
 			const $personMerge = $personEnter.merge($person);
 			$personMerge.call(enterCircles, { scaleX, scaleY, r: 0 });
@@ -654,20 +670,17 @@ const STEP = {
 			$personMerge
 				.selectAll('.is-not-death-index')
 				.classed('is-transparent', true);
-			$personMerge.selectAll('path').classed('is-transparent', true);
 		};
 
 		const line = getLine({ scaleX, scaleY });
 		$person
 			.selectAll('path')
 			.transition()
-			.duration(dur.slow)
+			.duration(dur.fast)
 			.ease(EASE)
-			.at('d', line)
 			.st('opacity', 0)
-			.on('end', d => {
-				if (d[0] && d[0].pageid === PRINCE_ID && !leave) addOthers();
-			});
+			.on('end', (d, i, n) => d3.select(n[i]).at('d', line));
+
 		$person
 			.selectAll('circle')
 			.transition()
@@ -677,19 +690,17 @@ const STEP = {
 			.at(
 				'transform',
 				d => `translate(${scaleX(d.date)}, ${scaleY(d.views_adjusted)})`
-			);
+			)
+			.on('end', d => {
+				if (d && d.pageid === PRINCE_ID && !leave) addOthers();
+			});
 		// highlight prince
 		$person.classed('is-highlight', false);
-		// EXIT BEYONCE
-		$person
-			.exit()
-			.transition()
-			.duration(dur.fast)
-			.st('opacity', 0)
-			.remove();
 
 		// ANNOTATION
 		createAnnotation({ scaleX, scaleY, annoData: [] });
+
+		exitPerson($person, dur.fast);
 
 		// LEAVE
 		if (leave && !reverse) {
@@ -697,6 +708,7 @@ const STEP = {
 		}
 	},
 	compare: ({ reverse, leave }) => {
+		// console.log('compare', { reverse, leave });
 		if (!reverse && !leave) STEP.others({ leave: true });
 		const dur = getDuration({ leave, reverse });
 
@@ -801,7 +813,7 @@ const STEP = {
 			createAnnotation({ scaleX, scaleY, annoData: [] });
 		} else {
 			// ANNOTATION
-			createAnnotation({ scaleX, scaleY, annoData, delay: dur.slow });
+			createAnnotation({ scaleX, scaleY, annoData });
 		}
 
 		// VORONOI
@@ -827,6 +839,8 @@ const STEP = {
 			.on('mouseout', handleVorExit)
 			.merge($vorPath)
 			.at('d', d => (d ? `M${d.join('L')}Z` : null));
+
+		exitPerson($person, dur.fast);
 	}
 };
 
@@ -837,7 +851,7 @@ function updateDimensions() {
 }
 
 function updateStep({ reverse = true, leave = false }) {
-	console.log({ currentStep, reverse, leave });
+	// console.log({ currentStep, reverse, leave });
 	if (STEP[currentStep]) STEP[currentStep]({ reverse, leave });
 }
 
@@ -866,10 +880,12 @@ function resize() {
 		.filter((d, i) => i === stepCount - 1)
 		.st('padding-bottom', innerHeight * 1.2);
 
-	updateStep({});
+	scroller.resize();
+	// scrollerHover.resize();
+	updateStep({ reverse: false, leave: true });
 }
 
-function handleStepEnter({ element, direction }) {
+function handleStepEnter({ element, index, direction }) {
 	// console.log({ step: 'enter', index, element, direction });
 	currentStep = d3.select(element).at('data-step');
 	updateStep({ reverse: direction === 'up' });
@@ -883,7 +899,7 @@ function handleHoverEnter() {
 function handleHoverExit() {
 	hoverEnabled = false;
 	$chart.classed('is-hover', false);
-	tooltip.hide($tip)
+	tooltip.hide($tip);
 }
 
 function setupScroller() {
@@ -891,18 +907,19 @@ function setupScroller() {
 
 	scroller
 		.setup({
-			step: $step.nodes(),
+			step: '#perspective article .step',
 			offset: 0.99
 		})
 		.onStepEnter(handleStepEnter);
 
 	scrollerHover
 		.setup({
-			step: '.step-hover',
+			step: '#perspective article .step-hover',
 			offset: 0
 		})
 		.onStepEnter(handleHoverEnter)
-		.onStepExit(handleHoverExit);
+	// 	.onStepExit(handleHoverExit);
+
 }
 
 function setupTooltip() {
@@ -939,11 +956,32 @@ function loadData() {
 	});
 }
 
+function test() {
+	let i = 0;
+	const s = [
+		'context',
+		'lemonade',
+		'prince-before',
+		'prince-spike',
+		'others',
+		'compare'
+	];
+
+	window.addEventListener('keyup', e => {
+		const dir = e.key === 'ArrowLeft' ? -1 : 1;
+		i += dir;
+		i = Math.min(Math.max(0, i), s.length - 1);
+		currentStep = s[i];
+		updateStep({ reverse: dir === -1, leave: false });
+	});
+}
+
 function init() {
 	loadData().then(() => {
 		resize();
 		setupScroller();
 		setupTooltip();
+		// test();
 	});
 }
 
