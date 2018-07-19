@@ -15,10 +15,10 @@ function resize() {
 	const width = $body.node().offsetWidth;
 	if (previousWidth !== width) {
 		previousWidth = width;
-		graphicPerspective.resize();
-		graphicChange.resize();
+		// graphicPerspective.resize();
+		// graphicChange.resize();
 		graphicCare.resize();
-		graphicImpact.resize();
+		// graphicImpact.resize();
 	}
 }
 
@@ -44,10 +44,10 @@ function init() {
 	setupStickyHeader();
 
 	// kick off graphic code
-	graphicPerspective.init();
-	graphicChange.init();
+	// graphicPerspective.init();
+	// graphicChange.init();
 	graphicCare.init();
-	graphicImpact.init();
+	// graphicImpact.init();
 }
 
 init();

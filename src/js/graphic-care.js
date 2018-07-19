@@ -1,3 +1,4 @@
+import uniq from 'lodash.uniqby';
 import cleanData from './clean-data';
 import tooltip from './tooltip';
 
@@ -88,48 +89,6 @@ function setupChart() {
 		});
 }
 
-function colorize(datum) {
-	const $days = d3.select(this);
-	const mean = datum.mean_views_adjusted_bd_1;
-	const std = datum.std_1;
-	const maxViews = d3.max(datum.pageviews, v => v.views_adjusted);
-	const diff = maxViews - mean;
-	const mult = Math.floor(diff / std);
-
-	const scale = d3
-		.scaleLinear()
-		.domain([0, mult])
-		.range([0.1, 1]);
-	$days.selectAll('.day').st('opacity', d => {
-		const val = (d.views_adjusted - mean) / std;
-		return scale(val);
-	});
-}
-
-function setupChart2() {
-	const data = peopleData.filter(d => d.weeks_until_norm);
-
-	data.sort((a, b) => d3.descending(a.days_until_norm, b.days_until_norm));
-	const $person = $figure
-		.select('.heated-bar')
-		.selectAll('.person2')
-		.data(data)
-		.enter()
-		.append('li.person2');
-
-	$person.append('p.label').text(d => d.display);
-
-	const $days = $person.append('ul.days');
-
-	const $day = $days
-		.selectAll('.day')
-		.data(d => d.pageviews)
-		.enter()
-		.append('li.day');
-
-	$days.each(colorize);
-}
-
 function getWeeksUntilNorm({ last_updated, pageviews }) {
 	const len = pageviews.length;
 	const { timestamp } = pageviews[len - 1];
@@ -146,6 +105,30 @@ function setupTooltip() {
 	$tip = tooltip.init({ container: $ul });
 	$ul.on('mouseleave', () => {
 		tooltip.hide($tip);
+	});
+}
+
+function setupFilters(name) {
+	const lower = name.toLowerCase();
+	const data = uniq([].concat(...peopleData.map(d => d[lower])));
+
+	data.unshift(name);
+
+	const $dropdown = $figure.select(`.filter--${lower}`);
+
+	$dropdown
+		.selectAll('option')
+		.data(data)
+		.enter()
+		.append('option')
+		.at('value', d => d)
+		.text(d => d);
+
+	$dropdown.on('input', () => {
+		const val = $dropdown.prop('value');
+		$ul
+			.selectAll('.person')
+			.classed('is-faded', d => val !== name && !d[lower].includes(val));
 	});
 }
 
@@ -180,8 +163,11 @@ function loadData() {
 
 function init() {
 	loadData().then(() => {
+		console.log(peopleData[0]);
 		resize();
 		setupChart();
+		setupFilters('Industry');
+		setupFilters('Cause');
 		setupTooltip();
 	});
 }

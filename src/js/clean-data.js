@@ -20,7 +20,10 @@ function people(data) {
 		year_of_death: +d.year_of_death,
 
 		iqr_1: +d.iqr_1,
-		std_1: +d.std_1
+		std_1: +d.std_1,
+
+		industry: d.industry.split(','),
+		cause: [d.cause]
 	}));
 }
 

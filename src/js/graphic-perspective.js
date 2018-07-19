@@ -878,7 +878,9 @@ function resize() {
 	$step.filter((d, i) => i === 0).st('margin-top', -innerHeight * 0.67);
 	$step
 		.filter((d, i) => i === stepCount - 1)
-		.st('padding-bottom', innerHeight * 1.2);
+		.st('padding-bottom', innerHeight * 0.9);
+
+	$article.select('.step-hover').st('padding-bottom', innerHeight * 0.4)
 
 	scroller.resize();
 	// scrollerHover.resize();
@@ -894,11 +896,13 @@ function handleStepEnter({ element, index, direction }) {
 function handleHoverEnter() {
 	hoverEnabled = true;
 	$chart.classed('is-hover', true);
+	$article.classed('is-disabled', true)
 }
 
 function handleHoverExit() {
 	hoverEnabled = false;
 	$chart.classed('is-hover', false);
+	$article.classed('is-disabled', false)
 	tooltip.hide($tip);
 }
 
@@ -915,10 +919,10 @@ function setupScroller() {
 	scrollerHover
 		.setup({
 			step: '#perspective article .step-hover',
-			offset: 0
+			offset: 1
 		})
 		.onStepEnter(handleHoverEnter)
-	// 	.onStepExit(handleHoverExit);
+		.onStepExit(handleHoverExit);
 
 }
 

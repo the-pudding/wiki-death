@@ -9,7 +9,7 @@ const $table = $figure.select('table');
 const $tbody = $table.select('tbody');
 const $btn = $section.select('.btn');
 
-let theadHeight = 0;
+// let theadHeight = 0;
 
 function formatComma(number) {
 	return d3.format(',')(Math.round(number));
@@ -33,7 +33,7 @@ function setupChart() {
 		.enter()
 		.append('tr');
 
-	$tr.append('td.name').text(d => d.display);
+	$tr.append('td.name').html(d => `${d.display} <span>${d.description}</span>`);
 
 	$tr
 		.append('td.avg.number')
@@ -87,7 +87,7 @@ function loadData() {
 }
 
 function resize() {
-	theadHeight = $table.select('thead').node().offsetHeight;
+	// theadHeight = $table.select('thead').node().offsetHeight;
 }
 
 function init() {

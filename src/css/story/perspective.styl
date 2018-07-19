@@ -20,9 +20,13 @@
 		max-width $column-width
 
 	article
-		pointer-events none
 		position relative
-		// background rgba(red, 0.5)
+		&.is-disabled
+			pointer-events none
+
+	.step-hover
+		height 4rem
+		pointer-events none
 
 	.step
 		max-width $column-width

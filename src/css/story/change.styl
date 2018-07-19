@@ -1,6 +1,7 @@
 #change
 	figure
-		max-width 33.5rem
+		max-width 34rem
+		max-width 45rem
 		margin 0 auto
 		position relative
 		&.is-truncated
@@ -8,6 +9,7 @@
 			overflow hidden
 
 	table
+		width 100%
 		set-type-size(x-small, false)
 		margin 0 auto
 		table-layout fixed
@@ -17,8 +19,8 @@
 		width 25%
 		vertical-align bottom
 		&:first-child
-			min-width 9rem
-			width 9rem
+			min-width 15rem
+			width 15rem
 	thead
 		tr
 			// border-bottom 2px solid $gs-light
@@ -37,7 +39,7 @@
 			padding 0.5em
 			color lighten($fg, 10)
 			&:first-child
-				font-weight 400
+				font-weight 600
 				color $fg
 			&:nth-child(4)
 				font-weight 600
@@ -46,6 +48,11 @@
 		.number
 			font-family $mono
 			text-align right
+
+		.name
+			span
+				set-type-size(xx-small)
+				font-weight 400
 
 	.toggle-table
 		text-align center
