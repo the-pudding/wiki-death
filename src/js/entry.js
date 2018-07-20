@@ -20,7 +20,7 @@ function resize() {
 		// graphicPerspective.resize();
 		graphicChange.resize();
 		graphicCare.resize();
-		// graphicImpact.resize();
+		graphicImpact.resize();
 	}
 }
 
@@ -50,9 +50,9 @@ function init() {
 		const peopleData = cleanData.people(response[0]);
 		// graphicPerspective.init(peopleData);
 		graphicChange.init(peopleData);
-		// graphicCare.init(peopleData);
-		// graphicImpact.init(peopleData);
-		preloadImages(peopleData);
+		graphicCare.init(peopleData);
+		graphicImpact.init(peopleData);
+		// preloadImages(peopleData);
 	});
 }
 

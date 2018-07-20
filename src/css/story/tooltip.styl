@@ -3,7 +3,7 @@
 	top 50%
 	left 50%
 	z-index set-index(overlay)
-	background rgba($bg, 0.9)
+	background rgba($off-white, 0.95)
 	width 20rem
 	box-shadow 0 0 10px 2px rgba($fg, 0.25)
 	padding 1rem
@@ -26,16 +26,18 @@
 	&.is-visible
 		visibility visible
 	p
-		set-type-size(small)
+		set-type-size(x-small)
 		font-family $sans
 		margin 0
 	
 	.display
 		display flex
+		align-items baseline
 		justify-content space-between
 		margin-bottom 0.5rem
 	.name
 		font-weight 600
+		set-type-size(root)
 	.thumbnail
 		width 4rem
 		height 4rem
@@ -47,7 +49,20 @@
 		background-repeat no-repeat
 		background-color $gs-medium
 		border 1px solid $gs-medium
-		border-radius 2px
+		border-radius 3px
+		filter grayscale(100%)
+	.cause
+		display inline-block
+		border-top 1px solid $gs-light
+		margin-top 1em
+		padding-top 0.5em
+		text-transform uppercase
+		font-weight 500
+		set-type-size(xx-small)
+		span
+			text-transform none
+			font-weight 400
+			set-type-size(x-small)
 
 
 	&--hidden

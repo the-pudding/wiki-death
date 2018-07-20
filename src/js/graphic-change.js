@@ -38,7 +38,7 @@ function setupChart() {
 	$name
 		.append('a')
 		.text(d => d.display)
-		.at('href', d => `https://en.wikipedia.org/wiki/${d.link}`)
+		.at('href', d => d.link)
 		.at('target', '_blank');
 
 	$name.append('span').text(d => d.description_short);
@@ -88,12 +88,9 @@ function loadData(people) {
 	});
 }
 
-function resize() {
-	// theadHeight = $table.select('thead').node().offsetHeight;
-}
+function resize() {}
 
 function init(people) {
-	console.log(people);
 	loadData(people).then(() => {
 		resize();
 		setupChart();

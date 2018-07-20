@@ -5,6 +5,7 @@ function people(data) {
 		...d,
 		index: i,
 		display: d.display.replace(/\(.*\)/g, '').trim(),
+		link: `https://en.wikipedia.org${d.link}`,
 
 		mean_views_adjusted_bd_1: +d.mean_views_adjusted_bd_1,
 		mean_views_adjusted_bd_2: +d.mean_views_adjusted_bd_2,
@@ -22,10 +23,10 @@ function people(data) {
 		iqr_1: +d.iqr_1,
 		std_1: +d.std_1,
 
-		industry: d.industry.split(','),
-		cause: [d.cause]
+		industry: d.industry.split(',').map(v => v.trim()),
+		cause: [d.cause.trim()]
 	}));
-	const missing = clean.filter(d => !d.industry);
+	const missing = clean.filter(d => !d.industry[0].length);
 	if (missing.length) console.log({ missing });
 	return clean;
 }

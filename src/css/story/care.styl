@@ -23,6 +23,7 @@
 
 		.figure__list
 			position relative
+			padding-left 1rem
 		
 		.people
 			display flex
@@ -36,7 +37,8 @@
 			font-weight 400
 			cursor pointer
 			&.is-faded
-				color $gs-light
+				a
+					color $gs-light
 
 			a
 				border none
@@ -53,39 +55,21 @@
 			font-family $mono
 			line-height 1
 			margin 0
-			min-width 3rem
+			min-width 2.5rem
 			text-align right
 			padding-right 0.5em
 			color $primary
 			font-weight 600
 			cursor pointer
 
-
-	.heated-bar
-		li
-			list-style-type none
-		
-		p.label
-			set-type-size(x-small, true)
-			// font-family $mono
-			margin 0
-			min-width 10rem
-			text-align right
-			padding-right 0.5em
-
-		.person2
-			display flex
-			margin-bottom 0.25em
-
-		.days
-			display flex
-			flex-wrap wrap
-			border 1px solid $gs-light
-
-		.day
-			height 1rem
-			width 6px
-			background-color red
+	.figure__label
+		margin 0
+		position absolute
+		top 50%
+		left 0
+		font-family $mono
+		transform rotate(-90deg) translate(-33%, 0)
+		transform-origin 0 50%
 
 	.figure__filter
 		display flex
@@ -99,3 +83,5 @@
 		background $white
 		border-color $gs-medium
 		set-type-size(x-small, false)
+
+	

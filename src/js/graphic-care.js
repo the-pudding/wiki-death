@@ -66,12 +66,8 @@ function setupChart() {
 		.append('li.week');
 
 	$li.append('p.label').html(d => {
-		// const suffix = d.key === 1 ? '' : 's';
-		// if (d === MAX_WEEKS + 1) return `${d.key}+ weeks`;
-		// if (d === MAX_WEEKS + 2) return 'Never';
-		// return `${d.key} week${suffix}`;
 		if (d.key === MAX_WEEKS + 1) return `${d.key}+`;
-		if (d.key === MAX_WEEKS + 2) return 'TBD'
+		if (d.key === MAX_WEEKS + 2) return 'TBD';
 		return `${d.key}&nbsp;`;
 	});
 
@@ -90,7 +86,7 @@ function setupChart() {
 	$person
 		.append('a')
 		.text(d => d.display)
-		.at('href', d => `https://en.wikipedia.org/wiki/${d.link}`)
+		.at('href', d => d.link)
 		.at('target', '_blank');
 }
 
@@ -116,7 +112,6 @@ function setupTooltip() {
 function setupFilters(name) {
 	const lower = name.toLowerCase();
 	const data = uniq([].concat(...peopleData.map(d => d[lower])));
-
 	data.unshift(name);
 
 	const $dropdown = $figure.select(`.filter--${lower}`);
@@ -131,6 +126,7 @@ function setupFilters(name) {
 
 	$dropdown.on('input', () => {
 		const val = $dropdown.prop('value');
+		console.log(val);
 		$ul
 			.selectAll('.person')
 			.classed('is-faded', d => val !== name && !d[lower].includes(val));

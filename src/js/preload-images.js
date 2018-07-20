@@ -8,7 +8,6 @@ export default function(people) {
 		loadImage(url, () => {
 			i += 1;
 			if (i < people.length) next();
-			else console.log('done preloading images');
 		});
 	};
 
