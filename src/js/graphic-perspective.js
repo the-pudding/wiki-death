@@ -933,19 +933,18 @@ function setupTooltip() {
 	});
 }
 
-function loadData() {
+function loadData(people) {
 	return new Promise((resolve, reject) => {
-		const filenames = ['people', 'perspective', 'beyonce'];
+		const filenames = [ 'perspective', 'beyonce'];
 		const filepaths = filenames.map(f => `assets/data/${f}.csv`);
 		d3.loadData(...filepaths, (err, response) => {
 			if (err) reject(err);
-			const tempPeopleData = cleanData.people(response[0]);
-			pageviewData = cleanData.pageview(response[1]);
-			peopleData = tempPeopleData.map(d => ({
+			pageviewData = cleanData.pageview(response[0]);
+			peopleData = people.map(d => ({
 				...d,
 				pageviews: pageviewData.filter(p => p.pageid === d.pageid)
 			}));
-			const beyoncePageviews = cleanData.pageview(response[2]);
+			const beyoncePageviews = cleanData.pageview(response[1]);
 			beyonceData = [
 				{
 					pageid: 'beyonce',
@@ -980,8 +979,8 @@ function test() {
 	});
 }
 
-function init() {
-	loadData().then(() => {
+function init(people) {
+	loadData(people).then(() => {
 		resize();
 		setupScroller();
 		setupTooltip();

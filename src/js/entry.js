@@ -5,6 +5,8 @@ import graphicPerspective from './graphic-perspective';
 import graphicCare from './graphic-care';
 import graphicChange from './graphic-change';
 import graphicImpact from './graphic-impact';
+import preloadImages from './preload-images';
+import cleanData from './clean-data';
 
 const $body = d3.select('body');
 let previousWidth = 0;
@@ -16,7 +18,7 @@ function resize() {
 	if (previousWidth !== width) {
 		previousWidth = width;
 		// graphicPerspective.resize();
-		// graphicChange.resize();
+		graphicChange.resize();
 		graphicCare.resize();
 		// graphicImpact.resize();
 	}
@@ -44,10 +46,14 @@ function init() {
 	setupStickyHeader();
 
 	// kick off graphic code
-	// graphicPerspective.init();
-	// graphicChange.init();
-	graphicCare.init();
-	// graphicImpact.init();
+	d3.loadData('assets/data/people.csv', (err, response) => {
+		const peopleData = cleanData.people(response[0]);
+		// graphicPerspective.init(peopleData);
+		graphicChange.init(peopleData);
+		// graphicCare.init(peopleData);
+		// graphicImpact.init(peopleData);
+		preloadImages(peopleData);
+	});
 }
 
 init();

@@ -50,6 +50,7 @@ function show({ el, d, pos }) {
 		$el.select('.name').text(d.display);
 		$el.select('.date-of-death').text(`${d.date_of_death}, ${d.year_of_death}`);
 		$el.select('.bio span').text(t);
+		$el.select('.cause span').text(d.cause_specific);
 		$el
 			.select('.thumbnail')
 			.st('background-image', `url(${d.thumbnail_source})`);
@@ -86,6 +87,8 @@ function init({ container }) {
 		const $bio = $info.append('p.bio');
 		$bio.append('div.thumbnail');
 		$bio.append('span');
+
+		$info.append('p.cause').html('Cause of death: <span></span>');
 
 		$el.append('div.stats');
 	});

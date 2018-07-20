@@ -71,22 +71,27 @@ function setupChart() {
 		// if (d === MAX_WEEKS + 2) return 'Never';
 		// return `${d.key} week${suffix}`;
 		if (d.key === MAX_WEEKS + 1) return `${d.key}+`;
-		if (d.key === MAX_WEEKS + 2) return '???';
+		if (d.key === MAX_WEEKS + 2) return 'TBD'
 		return `${d.key}&nbsp;`;
 	});
 
 	const $people = $li.append('ul.people');
 
-	$people
+	const $person = $people
 		.selectAll('.person')
 		.data(d => d.values)
 		.enter()
 		.append('li.person')
-		.text(d => d.display)
 		.on('mouseenter', handleNameEnter)
 		.on('mouseleave', () => {
 			tooltip.hide($tip);
 		});
+
+	$person
+		.append('a')
+		.text(d => d.display)
+		.at('href', d => `https://en.wikipedia.org/wiki/${d.link}`)
+		.at('target', '_blank');
 }
 
 function getWeeksUntilNorm({ last_updated, pageviews }) {
@@ -132,15 +137,14 @@ function setupFilters(name) {
 	});
 }
 
-function loadData() {
+function loadData(people) {
 	return new Promise((resolve, reject) => {
-		const filenames = ['people', 'care'];
+		const filenames = ['care'];
 		const filepaths = filenames.map(f => `assets/data/${f}.csv`);
 		d3.loadData(...filepaths, (err, response) => {
 			if (err) reject(err);
-			const tempPeopleData = cleanData.people(response[0]);
-			pageviewData = cleanData.pageview(response[1]);
-			peopleData = tempPeopleData
+			pageviewData = cleanData.pageview(response[0]);
+			peopleData = people
 				.map(d => ({
 					...d,
 					pageviews: pageviewData.filter(p => p.pageid === d.pageid)
@@ -161,9 +165,8 @@ function loadData() {
 	});
 }
 
-function init() {
-	loadData().then(() => {
-		console.log(peopleData[0]);
+function init(people) {
+	loadData(people).then(() => {
 		resize();
 		setupChart();
 		setupFilters('Industry');

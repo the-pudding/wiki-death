@@ -1,7 +1,7 @@
 import convertTimestampToDate from './convert-timestamp-to-date';
 
 function people(data) {
-	return data.map((d, i) => ({
+	const clean = data.map((d, i) => ({
 		...d,
 		index: i,
 		display: d.display.replace(/\(.*\)/g, '').trim(),
@@ -25,6 +25,9 @@ function people(data) {
 		industry: d.industry.split(','),
 		cause: [d.cause]
 	}));
+	const missing = clean.filter(d => !d.industry);
+	if (missing.length) console.log({ missing });
+	return clean;
 }
 
 function pageview(data) {

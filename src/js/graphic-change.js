@@ -33,7 +33,15 @@ function setupChart() {
 		.enter()
 		.append('tr');
 
-	$tr.append('td.name').html(d => `${d.display} <span>${d.description}</span>`);
+	const $name = $tr.append('td.name');
+
+	$name
+		.append('a')
+		.text(d => d.display)
+		.at('href', d => `https://en.wikipedia.org/wiki/${d.link}`)
+		.at('target', '_blank');
+
+	$name.append('span').text(d => d.description_short);
 
 	$tr
 		.append('td.avg.number')
@@ -70,19 +78,13 @@ function setupToggle() {
 	});
 }
 
-function loadData() {
+function loadData(people) {
 	return new Promise((resolve, reject) => {
-		const filenames = ['people'];
-		const filepaths = filenames.map(f => `assets/data/${f}.csv`);
-		d3.loadData(...filepaths, (err, response) => {
-			if (err) reject(err);
-			const tempPeopleData = cleanData.people(response[0]);
-			peopleData = tempPeopleData.map(d => ({
-				...d,
-				change: d.death_views_adjusted_2 / d.median_views_adjusted_bd_2
-			}));
-			resolve();
-		});
+		peopleData = people.map(d => ({
+			...d,
+			change: d.death_views_adjusted_2 / d.median_views_adjusted_bd_2
+		}));
+		resolve();
 	});
 }
 
@@ -90,8 +92,9 @@ function resize() {
 	// theadHeight = $table.select('thead').node().offsetHeight;
 }
 
-function init() {
-	loadData().then(() => {
+function init(people) {
+	console.log(people);
+	loadData(people).then(() => {
 		resize();
 		setupChart();
 		setupToggle();

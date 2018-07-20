@@ -158,16 +158,15 @@ function setupChart() {
 		.on('mouseleave', handleMouseExit);
 }
 
-function loadData() {
+function loadData(people) {
 	const NUM_DAYS = 92;
 	return new Promise((resolve, reject) => {
-		const filenames = ['people', 'impact'];
+		const filenames = ['impact'];
 		const filepaths = filenames.map(f => `assets/data/${f}.csv`);
 		d3.loadData(...filepaths, (err, response) => {
 			if (err) reject(err);
-			const tempPeopleData = cleanData.people(response[0]);
-			pageviewData = cleanData.ma(response[1]);
-			peopleData = tempPeopleData
+			pageviewData = cleanData.ma(response[0]);
+			peopleData = people
 				.map(d => {
 					// add last at 0 for smooth viz
 					const pageviews = pageviewData.filter(p => p.pageid === d.pageid);
@@ -189,8 +188,8 @@ function loadData() {
 	});
 }
 
-function init() {
-	loadData().then(() => {
+function init(people) {
+	loadData(people).then(() => {
 		updateDimensions();
 		setupChart();
 		resize();
