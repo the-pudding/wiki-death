@@ -1,5 +1,3 @@
-import truncate from './utils/truncate';
-
 const HEADER_HEIGHT = d3.select('header').node().offsetHeight;
 const MARGIN = 32;
 
@@ -38,18 +36,11 @@ function hide(el) {
 }
 
 function show({ el, d, pos }) {
-	const t = truncate({
-		text: d.extract,
-		chars: 150,
-		clean: true,
-		ellipses: true
-	});
-
 	// content
 	el.forEach($el => {
 		$el.select('.name').text(d.display);
 		$el.select('.date-of-death').text(`${d.date_of_death}, ${d.year_of_death}`);
-		$el.select('.bio span').text(t);
+		$el.select('.bio span').text(d.extract_truncated);
 		$el.select('.cause span').text(d.cause_specific);
 		$el
 			.select('.thumbnail')

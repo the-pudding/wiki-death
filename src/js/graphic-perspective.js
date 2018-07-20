@@ -201,9 +201,10 @@ function enterCircles($person, { scaleX, scaleY, r = MIN_R }) {
 
 function updatePath($person, { scaleX, scaleY, render = true }) {
 	const line = getLine({ scaleX, scaleY });
-	$person.selectAll('path').data(d => [d.pageviews]);
-
-	if (render) $person.selectAll('path').at('d', line);
+	if ($person.datum().pageviews.length > 1) {
+		$person.selectAll('path').data(d => [d.pageviews]);
+		if (render) $person.selectAll('path').at('d', line);
+	}
 }
 
 function trimPageviews(pageviews, { start = -1, end = 0 }) {

@@ -1,11 +1,17 @@
 import convertTimestampToDate from './convert-timestamp-to-date';
+import truncate from './utils/truncate';
 
 function people(data) {
-	const clean = data.map((d, i) => ({
+	const chars = 235;
+	const clean = true;
+	const ellipses = true;
+
+	const output = data.map((d, i) => ({
 		...d,
 		index: i,
 		display: d.display.replace(/\(.*\)/g, '').trim(),
 		link: `https://en.wikipedia.org${d.link}`,
+		extract_truncated: truncate({ text: d.extract, chars, clean, ellipses }),
 
 		mean_views_adjusted_bd_1: +d.mean_views_adjusted_bd_1,
 		mean_views_adjusted_bd_2: +d.mean_views_adjusted_bd_2,
@@ -26,9 +32,9 @@ function people(data) {
 		industry: d.industry.split(',').map(v => v.trim()),
 		cause: [d.cause.trim()]
 	}));
-	const missing = clean.filter(d => !d.industry[0].length);
+	const missing = output.filter(d => !d.industry[0].length);
 	if (missing.length) console.log({ missing });
-	return clean;
+	return output;
 }
 
 function pageview(data) {
