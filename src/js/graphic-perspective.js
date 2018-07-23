@@ -764,7 +764,7 @@ const STEP = {
 		$person
 			.selectAll('circle')
 			.transition()
-			.duration(reverse ? 0 : dur.slow)
+			.duration(reverse ? 0 : dur.medium)
 			.ease(EASE)
 			.st('opacity', d => (d.bin_death_index === 0 ? 1 : 0))
 			.at(
