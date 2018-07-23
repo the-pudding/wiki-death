@@ -23,8 +23,6 @@
 			min-width 20rem
 			width 20rem
 	thead
-		tr
-			// border-bottom 2px solid $gs-light
 		th
 			text-transform uppercase
 			letter-spacing 0.05em
@@ -36,6 +34,8 @@
 	tbody
 		tr
 			border-bottom 1px solid $gs-light
+			&.is-faded
+				opacity 0.33
 		td
 			padding 0.5em
 			color lighten($fg, 10)

@@ -9,7 +9,11 @@ const $table = $figure.select('table');
 const $tbody = $table.select('tbody');
 const $btn = $section.select('.btn');
 
-// let theadHeight = 0;
+function filter({ name, value }) {
+	const $person = $tbody.selectAll('tr');
+	if (name) $person.classed('is-faded', d => !d[name].includes(value));
+	else $person.classed('is-faded', false);
+}
 
 function formatComma(number) {
 	return d3.format(',')(Math.round(number));
@@ -98,4 +102,4 @@ function init(people) {
 	});
 }
 
-export default { init, resize };
+export default { init, resize, filter };

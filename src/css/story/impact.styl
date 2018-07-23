@@ -8,33 +8,52 @@
 		position relative
 
 	.person
-		cursor pointer
-		&.is-inactive
+		path.after--area
+			stroke none
+			fill $gs-dark
+		path.after--line
+			fill none
+			stroke $primary
+			stroke-width 1.5px
+		text
+			fill $fg
+			set-type-size(x-small, false)
+			font-weight 400
+		&:nth-child(even)
+				path.after--area
+					fill $gs-medium
+
+		&.is-faded
 			path.after--area
 				fill $gs-light
-				&:nth-child(even)
-					fill $gs-light
 			path.after--line
 				stroke lighten($primary, 30)
 			text
 				opacity 0.35
-		path.after--line
-			stroke $primary
-			stroke-width 1.5px
-			fill none
-		
-		path.after--area
-			fill $gs-dark
-			stroke none
 
-		text
-			set-type-size(x-small, false)
-			font-weight 400
-			fill $fg
-
-		&:nth-child(even)
+		&.is-active
+			path.after--line
+				stroke $primary
+			
 			path.after--area
-				fill $gs-medium
+				fill $gs-dark
+				
+			text
+				opacity 1
+			
+			&:nth-child(even)
+					path.after--area
+						fill $gs-medium
+
+	svg:not(.is-faded)
+		.person.is-inactive
+			path.after--area
+				fill $gs-light
+			path.after--line
+				stroke lighten($primary, 30)
+			text
+				opacity 0.35
+
 
 	.interaction
 		fill-opacity 0

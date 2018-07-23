@@ -23,15 +23,25 @@ const $gAxis = $svg.select('.g-axis');
 
 let $person = null;
 
+function filter({ name, value }) {
+	if (name) {
+		$svg.classed('is-faded', true);
+		$person.classed('is-faded', d => !d[name].includes(value));
+	} else $svg.classed('is-faded', false);
+}
+
 function handleMouseMove() {
 	const [x, y] = d3.mouse(this);
 	const len = peopleData.length;
 	const index = Math.max(0, Math.min(Math.floor((y / rectH) * len), len - 1));
+	$person.classed('is-active', (d, i) => i === index);
 	$person.classed('is-inactive', (d, i) => i !== index);
+
 	// d3.select(this).raise();
 }
 
 function handleMouseExit() {
+	$person.classed('is-active', false);
 	$person.classed('is-inactive', false);
 }
 
@@ -142,7 +152,7 @@ function setupChart() {
 	const $personEnter = $person
 		.data(peopleData)
 		.enter()
-		.append('g.person');
+		.append('g.person.is-active');
 
 	$person = $personEnter.merge($person);
 
@@ -188,4 +198,4 @@ function init(people) {
 	});
 }
 
-export default { init, resize };
+export default { init, resize, filter };

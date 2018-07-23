@@ -19,6 +19,8 @@ function remove() {
 	$filters.classed('is-visible', false);
 	$filters.classed('is-active', false);
 	graphicCare.filter({});
+	graphicChange.filter({});
+	graphicImpact.filter({});
 }
 
 function update() {
@@ -29,6 +31,8 @@ function update() {
 	$filters.classed('is-visible', false);
 	$filters.classed('is-active', true);
 	graphicCare.filter({ name: name.toLowerCase(), value });
+	graphicChange.filter({ name: name.toLowerCase(), value });
+	graphicImpact.filter({ name: name.toLowerCase(), value });
 }
 
 export default function init({ name, data }) {
