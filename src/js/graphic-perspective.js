@@ -7,6 +7,7 @@ import tooltip from './tooltip';
 const MARGIN = { top: 20, bottom: 40, left: 50, right: 50 };
 const FONT_SIZE = 12;
 const PRINCE_ID = '57317';
+const BEYONCE_LAST = '20160425';
 const DATE_START = new Date(2016, 2, 1);
 const DATE_END = new Date(2016, 3, 27);
 const MIN_R = 4;
@@ -158,7 +159,7 @@ function resetLine($person, offset) {
 
 function enterPerson($person) {
 	$person.at('data-id', d => d.pageid);
-	$person.append('path')
+	$person.append('path');
 	$person.append('g.circles');
 
 	$person
@@ -168,7 +169,7 @@ function enterPerson($person) {
 		.at('y', 0)
 		.at('text-anchor', 'middle')
 		.at('alignment-baseline', 'baseline')
-		.st('opacity', 0)
+		.st('opacity', 0);
 
 	$person
 		.append('text.fg')
@@ -177,7 +178,7 @@ function enterPerson($person) {
 		.at('y', 0)
 		.at('text-anchor', 'middle')
 		.at('alignment-baseline', 'baseline')
-		.st('opacity', 0)
+		.st('opacity', 0);
 }
 
 function exitPerson($person, dur) {
@@ -262,22 +263,24 @@ function getDuration({ leave, reverse }) {
 }
 
 function handleVorEnter(d) {
-	if (hoverEnabled) {
+	if (hoverEnabled && currentStep === 'compare') {
 		const { pageid } = d.data;
 		const datum = peopleData.find(v => v.pageid === pageid);
 		$people.selectAll('.person').classed('is-active', v => v.pageid === pageid);
 		const $person = d3.select(`[data-id='${pageid}'`);
 
-		$person.raise();
-		const x = +$person.select('circle:last-of-type').at('data-x') + MARGIN.left;
-		const y = +$person.select('circle:last-of-type').at('data-y') + MARGIN.top;
-		const pos = { x, y };
-		tooltip.show({ el: $tip, d: datum, pos });
-	}
-}
+		if ($person.size()) {
+			$person.raise();
+			const $circle = $person
+				.selectAll('circle')
+				.filter(v => v.bin_death_index === 0);
+			const x = +$circle.at('data-x') + MARGIN.left;
+			const y = +$circle.at('data-y') + MARGIN.top;
 
-function handleVorExit(d) {
-	// console.log('exit', d);
+			const pos = { x, y };
+			tooltip.show({ el: $tip, d: datum, pos });
+		}
+	}
 }
 
 function createAnnotation({ scaleX, scaleY, annoData, dur = 0, delay = 0 }) {
@@ -415,12 +418,17 @@ const STEP = {
 		// highlight beyonce
 		$personMerge.classed('is-highlight', true);
 		$personMerge
-			.select('circle:last-of-type')
+			.selectAll('circle')
+			.filter(d => d.timestamp === BEYONCE_LAST)
 			.transition()
 			.duration(dur.fast)
 			.ease(EASE)
 			.at('r', MAX_R)
-			.st('stroke-width', MAX_R / 2);
+			.st('stroke-width', MAX_R / 2)
+			.at(
+				'transform',
+				d => `translate(${scaleX(d.date)}, ${scaleY(d.views_adjusted)})`
+			);
 
 		// ANNOTATION
 		createAnnotation({ scaleX, scaleY, annoData, dur: dur.fast });
@@ -486,6 +494,7 @@ const STEP = {
 				);
 		} else {
 			const $prince = $personMerge.filter(d => d.pageid === PRINCE_ID);
+			const $bey = $personMerge.filter(d => d.pageid === 'beyonce');
 			$prince.call(resetLine);
 			$prince
 				.selectAll('path')
@@ -506,6 +515,14 @@ const STEP = {
 					'stroke-width',
 					d => (d.bin_death_index === 0 ? MAX_R / 2 : MIN_R / 2)
 				);
+
+			$bey
+				.selectAll('circle')
+				.transition()
+				.duration(dur.fast)
+				.ease(EASE)
+				.at('r', MIN_R)
+				.st('stroke-width', MIN_R / 2);
 		}
 
 		// ANNOTATION
@@ -586,13 +603,12 @@ const STEP = {
 		const line = getLine({ scaleX, scaleY });
 
 		if (reverse) {
-			$personMerge.call(enterCircles, { scaleX, scaleY });
+			$personMerge.call(enterCircles, { scaleX, scaleY, r: 0 });
 			$personMerge.call(updatePath, { scaleX, scaleY, render: !reverse });
-			// const $prince = $personMerge.filter(d => d.pageid === PRINCE_ID);
-			// $prince.call(resetLine);
 			$personMerge
 				.selectAll('path')
 				.at('d', line)
+				.at('opacity', 0)
 				.at('stroke-dashoffset', 0)
 				.at('stroke-dasharray', '0 0')
 				.transition()
@@ -603,14 +619,18 @@ const STEP = {
 			$personMerge
 				.selectAll('circle')
 				.transition()
-				.duration(d => (d.bin_death_index === 0 ? dur.slow : dur.fast))
-				.delay(d => (d.bin_death_index === 0 ? 0 : dur.slow))
+				.duration(dur.slow)
+				.delay(d => (d.pageid === 'beyonce' ? dur.slow : 0))
 				.ease(EASE)
 				.st('opacity', 1)
 				.at('r', d => (d.bin_death_index === 0 ? MAX_R : MIN_R))
 				.at(
 					'transform',
 					d => `translate(${scaleX(d.date)}, ${scaleY(d.views_adjusted)})`
+				)
+				.st(
+					'stroke-width',
+					d => (d.bin_death_index === 0 ? MAX_R / 2 : MIN_R / 2)
 				);
 		} else {
 			$personMerge
@@ -633,6 +653,10 @@ const STEP = {
 				.at(
 					'transform',
 					d => `translate(${scaleX(d.date)}, ${scaleY(d.views_adjusted)})`
+				)
+				.st(
+					'stroke-width',
+					d => (d.bin_death_index === 0 ? MAX_R / 2 : MIN_R / 2)
 				);
 		}
 
@@ -641,7 +665,7 @@ const STEP = {
 			.transition()
 			.duration(dur.fast)
 			.ease(EASE)
-			.st('opacity', 0)
+			.st('opacity', 0);
 
 		// highlight prince
 		$personMerge.classed('is-highlight', d => d.pageid === PRINCE_ID);
@@ -658,6 +682,7 @@ const STEP = {
 	others: ({ reverse, leave }) => {
 		// console.log('others', { reverse, leave });
 		if (!reverse && !leave) STEP['prince-spike']({ leave: true });
+
 		const dur = getDuration({ leave, reverse });
 
 		// DATA
@@ -692,6 +717,7 @@ const STEP = {
 			$personMerge.call(enterCircles, { scaleX, scaleY, r: 0 });
 			$personMerge
 				.selectAll('circle')
+				.classed('is-active', false)
 				.transition()
 				.duration(dur.medium)
 				.delay(d => {
@@ -700,25 +726,25 @@ const STEP = {
 				})
 				.ease(EASE)
 				.at('r', d => scaleR(d.views_adjusted))
-				.at('stroke-width', d => scaleR(d.views_adjusted) / 2);
+				.at('stroke-width', MIN_R / 2);
 
 			$personMerge
 				.selectAll('text')
 				.at('transform', d => {
-					const x = scaleX(d.pageviews[0].date)
-					const y = scaleY(d.pageviews[0].views_adjusted)
-					const r = scaleR(d.pageviews[0].views_adjusted * 1.5)
-					return `translate(${x}, ${y - r})`
+					const x = scaleX(d.pageviews[0].date);
+					const y = scaleY(d.pageviews[0].views_adjusted);
+					const r = scaleR(d.pageviews[0].views_adjusted * 1.5);
+					return `translate(${x}, ${y - r})`;
 				})
 				.transition()
 				.duration(dur.medium)
 				.delay(d => {
+					if (reverse) return 0;
 					const { index } = peopleData.find(p => p.pageid === d.pageid);
-					return dur.slow * (index / peopleData.length)
-					;
+					return dur.slow * (index / peopleData.length);
 				})
 				.ease(EASE)
-				.st('opacity', d => d.perspective_show ? 1 : 0)
+				.st('opacity', d => (d.perspective_show ? 1 : 0));
 
 			$personMerge.filter(d => d.perspective_show).raise();
 			$personMerge
@@ -738,7 +764,7 @@ const STEP = {
 		$person
 			.selectAll('circle')
 			.transition()
-			.duration(dur.slow)
+			.duration(reverse ? 0 : dur.slow)
 			.ease(EASE)
 			.st('opacity', d => (d.bin_death_index === 0 ? 1 : 0))
 			.at(
@@ -855,8 +881,8 @@ const STEP = {
 			.transition()
 			.duration(dur.fast)
 			.ease(EASE)
-			.st('opacity', 0)
-			
+			.st('opacity', 0);
+
 		// highlight prince
 		$person.classed('is-highlight', false);
 
@@ -897,7 +923,6 @@ const STEP = {
 			.enter()
 			.append('path')
 			.on('mouseenter', handleVorEnter)
-			.on('mouseout', handleVorExit)
 			.merge($vorPath)
 			.at('d', d => (d ? `M${d.join('L')}Z` : null));
 
@@ -1020,6 +1045,7 @@ function loadData(people) {
 }
 
 function test() {
+	handleHoverEnter();
 	let i = 0;
 	const s = [
 		'context',
