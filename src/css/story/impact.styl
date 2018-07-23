@@ -11,20 +11,20 @@
 		cursor pointer
 		&.is-inactive
 			path.after--area
-				fill lighten($primary, 40)
+				fill $gs-light
 				&:nth-child(even)
-					fill lighten($primary, 40)
+					fill $gs-light
 			path.after--line
 				stroke lighten($primary, 30)
 			text
 				opacity 0.35
 		path.after--line
-			stroke darken($primary, 20)
+			stroke $primary
 			stroke-width 1.5px
 			fill none
 		
 		path.after--area
-			fill lighten($primary, 10)
+			fill $gs-dark
 			stroke none
 
 		text
@@ -34,7 +34,7 @@
 
 		&:nth-child(even)
 			path.after--area
-				fill darken($primary, 10)
+				fill $gs-medium
 
 	.interaction
 		fill-opacity 0

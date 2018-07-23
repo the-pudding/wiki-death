@@ -1,5 +1,4 @@
 import cleanData from './clean-data';
-import color from './color';
 
 const MARGIN = { top: 160, bottom: 10, left: 0, right: 20 };
 const FONT_SIZE = 12;
@@ -7,6 +6,7 @@ const REM = 16;
 const MAX_HEIGHT = FONT_SIZE * 5;
 const TEXT_WIDTH = REM * 8;
 const OFFSET = 0.4;
+const NUM_DAYS = 91;
 
 let width = 0;
 let height = 0;
@@ -159,7 +159,6 @@ function setupChart() {
 }
 
 function loadData(people) {
-	const NUM_DAYS = 92;
 	return new Promise((resolve, reject) => {
 		const filenames = ['impact'];
 		const filepaths = filenames.map(f => `assets/data/${f}.csv`);
@@ -168,15 +167,8 @@ function loadData(people) {
 			pageviewData = cleanData.ma(response[0]);
 			peopleData = people
 				.map(d => {
-					// add last at 0 for smooth viz
+					// // add last at 0 for smooth viz
 					const pageviews = pageviewData.filter(p => p.pageid === d.pageid);
-					const last = pageviews[pageviews.length - 1];
-					const add = {
-						bin_death_index: last.bin_death_index,
-						diff_percent: 0,
-						ma: 1
-					};
-					pageviews.push(add);
 					return {
 						...d,
 						pageviews

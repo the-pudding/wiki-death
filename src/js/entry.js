@@ -6,6 +6,7 @@ import graphicCare from './graphic-care';
 import graphicChange from './graphic-change';
 import graphicImpact from './graphic-impact';
 import preloadImages from './preload-images';
+import filter from './filter';
 import cleanData from './clean-data';
 
 const $body = d3.select('body');
@@ -52,6 +53,8 @@ function init() {
 		graphicChange.init(peopleData);
 		graphicCare.init(peopleData);
 		graphicImpact.init(peopleData);
+		filter({ name: 'Industry', data: peopleData });
+		filter({ name: 'Cause', data: peopleData });
 		// preloadImages(peopleData);
 	});
 }

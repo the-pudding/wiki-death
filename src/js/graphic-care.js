@@ -1,4 +1,3 @@
-import uniq from 'lodash.uniqby';
 import cleanData from './clean-data';
 import tooltip from './tooltip';
 
@@ -109,30 +108,6 @@ function setupTooltip() {
 	});
 }
 
-function setupFilters(name) {
-	const lower = name.toLowerCase();
-	const data = uniq([].concat(...peopleData.map(d => d[lower])));
-	data.unshift(name);
-
-	const $dropdown = $figure.select(`.filter--${lower}`);
-
-	$dropdown
-		.selectAll('option')
-		.data(data)
-		.enter()
-		.append('option')
-		.at('value', d => d)
-		.text(d => d);
-
-	$dropdown.on('input', () => {
-		const val = $dropdown.prop('value');
-		console.log(val);
-		$ul
-			.selectAll('.person')
-			.classed('is-faded', d => val !== name && !d[lower].includes(val));
-	});
-}
-
 function loadData(people) {
 	return new Promise((resolve, reject) => {
 		const filenames = ['care'];
@@ -165,8 +140,6 @@ function init(people) {
 	loadData(people).then(() => {
 		resize();
 		setupChart();
-		setupFilters('Industry');
-		setupFilters('Cause');
 		setupTooltip();
 	});
 }

@@ -1,0 +1,67 @@
+.filters
+	display flex
+	position fixed
+	bottom 0
+	left 0
+	width 100%
+	max-width 14rem
+	z-index set-index(top)
+	background-color $off-white
+	padding 0.75rem
+	transform translate3d(-62%, 100%, 0)
+	transition transform 250ms ease-in-out
+	&.is-active
+		transform translate3d(0, 100%, 0)
+	&.is-visible
+		transform translate3d(0,0,0)
+	
+	svg
+		width 1em
+		height 1em
+		vertical-align baseline
+		transform translateY(2px)
+	p.label
+		margin 0
+		font-weight 600
+		letter-spacing 0.05em
+		text-transform uppercase
+		position absolute
+		top 0
+		left 0
+		transform translateY(-100%)
+		background-color $off-white
+		padding 0.75rem
+		width 100%
+		border-bottom 1px solid $gs-light
+		cursor pointer
+		display flex
+		justify-content space-between
+
+	.label__value
+		text-transform none
+		font-weight 400
+		margin-left 0.5em
+		letter-spacing 0.01em
+	
+	.filter
+		margin-right 1.5rem
+	p.filter__label
+		margin 0
+		font-weight 500
+	li
+		set-type-size(x-small, false)
+		cursor pointer
+		color $gs-dark
+		&:hover
+			color $primary
+	
+	p.remove
+		margin 0
+		font-weight 600
+		letter-spacing 0.05em
+		text-transform uppercase
+		position absolute
+		bottom 0.75rem
+		right 0.75rem
+		display inline-block
+		cursor pointer
