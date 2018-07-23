@@ -16,20 +16,17 @@
 			stroke $primary
 			stroke-width 1.5px
 		text
-			fill $fg
+			fill $gs-darkest
 			set-type-size(x-small, false)
-			font-weight 400
+			font-weight 600
+			letter-spacing 0.03em
 		&:nth-child(even)
 				path.after--area
 					fill $gs-medium
 
 		&.is-faded
-			path.after--area
-				fill $gs-light
-			path.after--line
-				stroke lighten($primary, 30)
 			text
-				opacity 0.35
+				fill $gs-light
 
 		&.is-active
 			path.after--line
@@ -39,26 +36,25 @@
 				fill $gs-dark
 				
 			text
-				opacity 1
+				fill $secondary
 			
 			&:nth-child(even)
 					path.after--area
 						fill $gs-medium
-
-	svg:not(.is-faded)
-		.person.is-inactive
+		
+		&.is-inactive
 			path.after--area
 				fill $gs-light
 			path.after--line
 				stroke lighten($primary, 30)
-			text
-				opacity 0.35
-
+			// text
+			// 	opacity 0.35
 
 	.interaction
 		fill-opacity 0
 
 	figure svg
+		cursor pointer
 		.g-axis
 			// .tick:first-of-type
 			// 	display none

@@ -14,7 +14,7 @@
 			font-size 82px
 
 	figure.figure--chart
-		max-width 67rem
+		max-width 59rem
 		min-height 320px
 		margin 0 auto
 		position relative
@@ -32,10 +32,10 @@
 			// flex 0 1 auto
 
 		.person
-			width 8rem
+			width 9.1rem
 			padding 0.25em
 			set-type-size(x-small, false)
-			font-weight 400
+			font-weight 600
 			cursor pointer
 			&.is-faded
 				a
@@ -43,6 +43,12 @@
 
 			a
 				border none
+				color $gs-darkest
+				letter-spacing 0.03em
+				&:visited
+					color $gs-darkest
+				&:hover
+					color $secondary
 		
 		.week
 			display flex

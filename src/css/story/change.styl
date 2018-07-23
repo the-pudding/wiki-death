@@ -34,6 +34,9 @@
 	tbody
 		tr
 			border-bottom 1px solid $gs-light
+			&:hover
+				.name a
+					color $secondary
 			&.is-faded
 				opacity 0.33
 		td
@@ -41,10 +44,10 @@
 			color lighten($fg, 10)
 			&:first-child
 				font-weight 600
-				color $fg
+				color $gs-darkest
 			&:nth-child(4)
 				font-weight 600
-				color darken($fg, 10)
+				color #1a1a1a
 
 		.number
 			font-family $mono
@@ -53,6 +56,8 @@
 		.name
 			a
 				border none
+				color $gs-darkest
+				letter-spacing 0.03em
 			span
 				set-type-size(xx-small)
 				font-weight 400
@@ -81,5 +86,6 @@
 		background linear-gradient(rgba($bg, 0), $bg)
 		bottom 0
 		visibility hidden
+		pointer-events none
 		&.is-visible
 			visibility visible

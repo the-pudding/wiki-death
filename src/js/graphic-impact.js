@@ -10,7 +10,7 @@ const NUM_DAYS = 91;
 
 let width = 0;
 let height = 0;
-let rectH = 0;
+const rectH = 0;
 let peopleData = null;
 let pageviewData = null;
 
@@ -27,17 +27,15 @@ function filter({ name, value }) {
 	if (name) {
 		$svg.classed('is-faded', true);
 		$person.classed('is-faded', d => !d[name].includes(value));
-	} else $svg.classed('is-faded', false);
+	} else {
+		$svg.classed('is-faded', false);
+		$person.classed('is-faded', false);
+	}
 }
 
-function handleMouseMove() {
-	const [x, y] = d3.mouse(this);
-	const len = peopleData.length;
-	const index = Math.max(0, Math.min(Math.floor((y / rectH) * len), len - 1));
-	$person.classed('is-active', (d, i) => i === index);
-	$person.classed('is-inactive', (d, i) => i !== index);
-
-	// d3.select(this).raise();
+function handleMouseEnter({ pageid }) {
+	$person.classed('is-active', d => d.pageid === pageid);
+	$person.classed('is-inactive', d => d.pageid !== pageid);
 }
 
 function handleMouseExit() {
@@ -48,7 +46,7 @@ function handleMouseExit() {
 function updateDimensions() {
 	const h = window.innerHeight;
 	width = $chart.node().offsetWidth - MARGIN.left - MARGIN.right;
-	height = MAX_HEIGHT * OFFSET * peopleData.length + MARGIN.top + MARGIN.bottom;
+	height = MAX_HEIGHT * OFFSET * peopleData.length + MAX_HEIGHT;
 }
 
 function resize() {
@@ -106,21 +104,16 @@ function resize() {
 
 	$person.at('transform', (d, i) => `translate(0,${i * MAX_HEIGHT * OFFSET})`);
 
-	rectH = height - MARGIN.top + MARGIN.bottom + MAX_HEIGHT * OFFSET;
-
-	$gVis.select('.interaction').at({
-		x: 0,
-		y: 0,
-		width,
-		height: rectH
-	});
+	const rectH = MAX_HEIGHT * OFFSET;
+	const rectY = MAX_HEIGHT * (1 - OFFSET);
+	$person.select('.interaction').at({ width, height: rectH, y: rectY });
 
 	const axis = d3
 		.axisTop(scaleX)
 		.tickValues([30, 60, 90, 120, 150])
 		.tickSize(-height)
 		.tickFormat((val, i) => {
-			const suffix = i === 0 ? ' days' : '';
+			const suffix = i === 0 ? ' days after death' : '';
 			return `${val}${suffix}`;
 		});
 	// .tickPadding(0)
@@ -147,12 +140,13 @@ function setupChart() {
 		return d3.descending(ma, mb);
 	});
 
+	$svg.on('mouseleave', handleMouseExit);
 	$person = $gVis.selectAll('.person');
 
 	const $personEnter = $person
 		.data(peopleData)
 		.enter()
-		.append('g.person.is-active');
+		.append('g.person');
 
 	$person = $personEnter.merge($person);
 
@@ -162,10 +156,10 @@ function setupChart() {
 
 	$person.append('path.after--line');
 
-	$gVis
+	$person
 		.append('rect.interaction')
-		.on('mousemove', handleMouseMove)
-		.on('mouseleave', handleMouseExit);
+		.at({ x: 0, y: 0 })
+		.on('mouseenter', handleMouseEnter);
 }
 
 function loadData(people) {
