@@ -30,7 +30,8 @@ function people(data) {
 		std_1: +d.std_1,
 
 		industry: d.industry.split(',').map(v => v.trim()),
-		cause: [d.cause.trim()]
+		cause: [d.cause.trim()],
+		perspective_show: !!d.perspective_show
 	}));
 	const missing = output.filter(d => !d.industry[0].length);
 	if (missing.length) console.log({ missing });

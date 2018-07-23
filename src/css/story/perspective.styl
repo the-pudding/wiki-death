@@ -65,6 +65,12 @@
 			&.is-active
 				circle
 					fill $primary
+			&.is-faded
+				circle
+					fill $gs-light
+				&.is-active
+					circle
+						fill $primary
 			path
 				fill none
 				stroke $gs-medium
@@ -75,7 +81,7 @@
 			
 			circle
 				stroke $bg
-				fill $gs-medium
+				fill $gs-dark
 
 				&.is-transparent
 					opacity 0
@@ -88,6 +94,18 @@
 					stroke $primary
 				circle
 					fill $primary
+
+			text
+				set-type-size(x-small)
+				font-weight 500
+				letter-spacing 0.05em
+				&.bg
+					fill none
+					stroke-width 4px
+					stroke $bg
+				&.fg
+					fill $gs-dark
+
 
 		.g-voronoi path
 				fill-opacity 0

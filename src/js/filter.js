@@ -21,6 +21,7 @@ function remove() {
 	graphicCare.filter({});
 	graphicChange.filter({});
 	graphicImpact.filter({});
+	graphicPerspective.filter({});
 }
 
 function update() {
@@ -33,6 +34,7 @@ function update() {
 	graphicCare.filter({ name: name.toLowerCase(), value });
 	graphicChange.filter({ name: name.toLowerCase(), value });
 	graphicImpact.filter({ name: name.toLowerCase(), value });
+	graphicPerspective.filter({ name: name.toLowerCase(), value });
 }
 
 export default function init({ name, data }) {

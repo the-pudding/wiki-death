@@ -4,13 +4,13 @@ import * as Annotate from 'd3-svg-annotation';
 import cleanData from './clean-data';
 import tooltip from './tooltip';
 
-const MARGIN = { top: 20, bottom: 40, left: 40, right: 20 };
+const MARGIN = { top: 20, bottom: 40, left: 50, right: 50 };
 const FONT_SIZE = 12;
 const PRINCE_ID = '57317';
 const DATE_START = new Date(2016, 2, 1);
 const DATE_END = new Date(2016, 3, 27);
 const MIN_R = 4;
-const MAX_R = 12;
+const MAX_R = 16;
 const SEC = 1000;
 const DURATION = SEC * 3;
 const EASE = d3.easeCubicInOut;
@@ -44,6 +44,14 @@ let $tip = null;
 const scroller = scrollama();
 const scrollerHover = scrollama();
 const voronoi = d3.voronoi();
+
+function filter({ name, value }) {
+	// if (currentStep === 'compare') {
+	// }
+	const $person = $people.selectAll('.person');
+	if (name) $person.classed('is-faded', d => !d[name].includes(value));
+	else $person.classed('is-faded', false);
+}
 
 // helper functions
 function getScaleX(data = beyonceData[0].pageviews) {
@@ -150,8 +158,26 @@ function resetLine($person, offset) {
 
 function enterPerson($person) {
 	$person.at('data-id', d => d.pageid);
-	$person.append('path');
+	$person.append('path')
 	$person.append('g.circles');
+
+	$person
+		.append('text.bg')
+		.text(d => d.display)
+		.at('x', 0)
+		.at('y', 0)
+		.at('text-anchor', 'middle')
+		.at('alignment-baseline', 'baseline')
+		.st('opacity', 0)
+
+	$person
+		.append('text.fg')
+		.text(d => d.display)
+		.at('x', 0)
+		.at('y', 0)
+		.at('text-anchor', 'middle')
+		.at('alignment-baseline', 'baseline')
+		.st('opacity', 0)
 }
 
 function exitPerson($person, dur) {
@@ -241,6 +267,8 @@ function handleVorEnter(d) {
 		const datum = peopleData.find(v => v.pageid === pageid);
 		$people.selectAll('.person').classed('is-active', v => v.pageid === pageid);
 		const $person = d3.select(`[data-id='${pageid}'`);
+
+		$person.raise();
 		const x = +$person.select('circle:last-of-type').at('data-x') + MARGIN.left;
 		const y = +$person.select('circle:last-of-type').at('data-y') + MARGIN.top;
 		const pos = { x, y };
@@ -478,8 +506,6 @@ const STEP = {
 					'stroke-width',
 					d => (d.bin_death_index === 0 ? MAX_R / 2 : MIN_R / 2)
 				);
-			
-			
 		}
 
 		// ANNOTATION
@@ -610,6 +636,13 @@ const STEP = {
 				);
 		}
 
+		$personMerge
+			.selectAll('text')
+			.transition()
+			.duration(dur.fast)
+			.ease(EASE)
+			.st('opacity', 0)
+
 		// highlight prince
 		$personMerge.classed('is-highlight', d => d.pageid === PRINCE_ID);
 		$personMerge.filter(d => d.pageid === PRINCE_ID).raise();
@@ -668,6 +701,26 @@ const STEP = {
 				.ease(EASE)
 				.at('r', d => scaleR(d.views_adjusted))
 				.at('stroke-width', d => scaleR(d.views_adjusted) / 2);
+
+			$personMerge
+				.selectAll('text')
+				.at('transform', d => {
+					const x = scaleX(d.pageviews[0].date)
+					const y = scaleY(d.pageviews[0].views_adjusted)
+					const r = scaleR(d.pageviews[0].views_adjusted * 1.5)
+					return `translate(${x}, ${y - r})`
+				})
+				.transition()
+				.duration(dur.medium)
+				.delay(d => {
+					const { index } = peopleData.find(p => p.pageid === d.pageid);
+					return dur.slow * (index / peopleData.length)
+					;
+				})
+				.ease(EASE)
+				.st('opacity', d => d.perspective_show ? 1 : 0)
+
+			$personMerge.filter(d => d.perspective_show).raise();
 			$personMerge
 				.selectAll('.is-not-death-index')
 				.classed('is-transparent', true);
@@ -797,6 +850,13 @@ const STEP = {
 				d => `translate(${scaleX(d.date)}, ${scaleY(d.views_adjusted)})`
 			);
 
+		$person
+			.selectAll('text')
+			.transition()
+			.duration(dur.fast)
+			.ease(EASE)
+			.st('opacity', 0)
+			
 		// highlight prince
 		$person.classed('is-highlight', false);
 
@@ -881,7 +941,7 @@ function resize() {
 		.filter((d, i) => i === stepCount - 1)
 		.st('padding-bottom', innerHeight * 0.9);
 
-	$article.select('.step-hover').st('padding-bottom', innerHeight * 0.4)
+	$article.select('.step-hover').st('padding-bottom', innerHeight * 0.4);
 
 	scroller.resize();
 	// scrollerHover.resize();
@@ -897,13 +957,13 @@ function handleStepEnter({ element, index, direction }) {
 function handleHoverEnter() {
 	hoverEnabled = true;
 	$chart.classed('is-hover', true);
-	$article.classed('is-disabled', true)
+	$article.classed('is-disabled', true);
 }
 
 function handleHoverExit() {
 	hoverEnabled = false;
 	$chart.classed('is-hover', false);
-	$article.classed('is-disabled', false)
+	$article.classed('is-disabled', false);
 	tooltip.hide($tip);
 }
 
@@ -924,7 +984,6 @@ function setupScroller() {
 		})
 		.onStepEnter(handleHoverEnter)
 		.onStepExit(handleHoverExit);
-
 }
 
 function setupTooltip() {
@@ -936,7 +995,7 @@ function setupTooltip() {
 
 function loadData(people) {
 	return new Promise((resolve, reject) => {
-		const filenames = [ 'perspective', 'beyonce'];
+		const filenames = ['perspective', 'beyonce'];
 		const filepaths = filenames.map(f => `assets/data/${f}.csv`);
 		d3.loadData(...filepaths, (err, response) => {
 			if (err) reject(err);
@@ -989,4 +1048,4 @@ function init(people) {
 	});
 }
 
-export default { init, resize };
+export default { init, resize, filter };
