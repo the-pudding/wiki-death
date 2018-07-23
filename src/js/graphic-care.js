@@ -19,6 +19,12 @@ const $ul = $figure.select('ul');
 
 let $tip = null;
 
+function filter({ name, value }) {
+	const $person = $ul.selectAll('.person');
+	if (name) $person.classed('is-faded', d => !d[name].includes(value));
+	else $person.classed('is-faded', false);
+}
+
 function handleNameEnter(datum) {
 	const m = d3.mouse(this);
 	// const sz = this.offsetWidth / 2;
@@ -144,4 +150,4 @@ function init(people) {
 	});
 }
 
-export default { init, resize };
+export default { init, resize, filter };

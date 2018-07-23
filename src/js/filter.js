@@ -1,4 +1,8 @@
 import uniq from 'lodash.uniqby';
+import graphicPerspective from './graphic-perspective';
+import graphicCare from './graphic-care';
+import graphicChange from './graphic-change';
+import graphicImpact from './graphic-impact';
 
 const $filters = d3.select('.filters');
 const $label = $filters.select('.label');
@@ -14,16 +18,17 @@ function remove() {
 	$value.html('');
 	$filters.classed('is-visible', false);
 	$filters.classed('is-active', false);
+	graphicCare.filter({});
 }
 
 function update() {
 	const $sel = d3.select(this);
-	const val = $sel.text();
+	const value = $sel.text();
 	const name = $sel.at('data-name');
-	$value.html(`${name}: ${val}`);
+	$value.html(`${name}: ${value}`);
 	$filters.classed('is-visible', false);
 	$filters.classed('is-active', true);
-	// 	.classed('is-faded', d => val !== name && !d[lower].includes(val));
+	graphicCare.filter({ name: name.toLowerCase(), value });
 }
 
 export default function init({ name, data }) {
