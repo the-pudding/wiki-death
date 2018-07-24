@@ -10,9 +10,10 @@ const NUM_DAYS = 91;
 
 let width = 0;
 let height = 0;
-const rectH = 0;
 let peopleData = null;
 let pageviewData = null;
+let scaleX = null;
+let scaleY = null;
 
 const $section = d3.select('#impact');
 const $figure = $section.select('figure');
@@ -22,6 +23,10 @@ const $gVis = $svg.select('.g-vis');
 const $gAxis = $svg.select('.g-axis');
 
 let $person = null;
+
+function formatPercent(number) {
+	return d3.format('.0%')(number);
+}
 
 function filter({ name, value }) {
 	if (name) {
@@ -33,12 +38,34 @@ function filter({ name, value }) {
 	}
 }
 
+function handleMouseMove(d) {
+	const $person = d3.select(this).parent();
+	const [x] = d3.mouse(this);
+	const index = Math.floor(scaleX.invert(x));
+	if (index >= 30) {
+		const datum = d.pageviews.find(p => p.bin_death_index === index);
+		const f = formatPercent(datum.diff_percent);
+		const y = scaleY(datum.diff_percent);
+		$person
+			.selectAll('.tip')
+			.text(f)
+			.at('transform', `translate(${x}, ${y})`);
+	}
+}
+
 function handleMouseEnter({ pageid }) {
 	$person.classed('is-active', d => d.pageid === pageid);
 	$person.classed('is-inactive', d => d.pageid !== pageid);
 }
 
 function handleMouseExit() {
+	d3.select(this)
+		.parent()
+		.selectAll('.tip')
+		.text('');
+}
+
+function handleSvgExit() {
 	$person.classed('is-active', false);
 	$person.classed('is-inactive', false);
 }
@@ -59,15 +86,17 @@ function resize() {
 
 	// scales
 	const extent = d3.extent(pageviewData, d => d.bin_death_index);
-	const scaleX = d3
+	console.log({ extent });
+	scaleX = d3
 		.scaleLinear()
 		.domain(extent)
 		.range([TEXT_WIDTH + FONT_SIZE, width]);
 
-	// const max = d3.max(pageviewData, v => Math.abs(v.diff_percent));
+	// const maxV = d3.max(pageviewData, v => Math.abs(v.diff_percent));
+	// console.log(maxV);
 	const max = 20;
 
-	const scaleY = d3
+	scaleY = d3
 		.scaleLinear()
 		.domain([0, max])
 		.range([MAX_HEIGHT, 0]);
@@ -87,7 +116,7 @@ function resize() {
 		.curve(d3.curveMonotoneX)
 		.defined(d => d.ma);
 
-	$person.select('text').at({
+	$person.select('.name').at({
 		x: TEXT_WIDTH,
 		y: scaleY.range()[0],
 		'text-anchor': 'end'
@@ -140,7 +169,7 @@ function setupChart() {
 		return d3.descending(ma, mb);
 	});
 
-	$svg.on('mouseleave', handleMouseExit);
+	$svg.on('mouseleave', handleSvgExit);
 	$person = $gVis.selectAll('.person');
 
 	const $personEnter = $person
@@ -150,16 +179,25 @@ function setupChart() {
 
 	$person = $personEnter.merge($person);
 
-	$person.append('text').text(d => d.display);
+	$person.append('text.name').text(d => d.display);
 
 	$person.append('path.after--area');
 
 	$person.append('path.after--line');
 
 	$person
+		.append('text.tip.tip--bg')
+		.at({ x: 0, y: -FONT_SIZE / 2, 'text-anchor': 'middle' });
+	$person
+		.append('text.tip.tip--fg')
+		.at({ x: 0, y: -FONT_SIZE / 2, 'text-anchor': 'middle' });
+
+	$person
 		.append('rect.interaction')
 		.at({ x: 0, y: 0 })
-		.on('mouseenter', handleMouseEnter);
+		.on('mouseenter', handleMouseEnter)
+		.on('mousemove', handleMouseMove)
+		.on('mouseleave', handleMouseExit);
 }
 
 function loadData(people) {
@@ -186,6 +224,7 @@ function loadData(people) {
 
 function init(people) {
 	loadData(people).then(() => {
+		console.log(peopleData);
 		updateDimensions();
 		setupChart();
 		resize();
