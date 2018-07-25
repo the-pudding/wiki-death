@@ -39,6 +39,7 @@ const $gVis = $svg.select('.g-vis');
 const $gAxis = $svg.select('.g-axis');
 const $gVor = $svg.select('.g-voronoi');
 const $people = $gVis.select('.people');
+const $legend = $figure.select('.legend')
 
 let $tip = null;
 
@@ -791,7 +792,6 @@ const STEP = {
 		// console.log('compare', { reverse, leave });
 		if (!reverse && !leave) STEP.others({ leave: true });
 		const dur = getDuration({ leave, reverse });
-
 		// DATA
 		const data = peopleData.map(d => ({
 			...d,
@@ -939,6 +939,7 @@ function updateDimensions() {
 function updateStep({ reverse = true, leave = false }) {
 	// console.log({ currentStep, reverse, leave });
 	if (STEP[currentStep]) STEP[currentStep]({ reverse, leave });
+	$legend.classed('is-visible', currentStep === 'compare')
 }
 
 function resize() {

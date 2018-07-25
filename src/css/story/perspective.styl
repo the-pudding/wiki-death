@@ -37,6 +37,7 @@
 			padding 1rem
 			background-color rgba($bg, 1)
 			box-shadow 0 0 10px 2px rgba($fg, 0.25)
+			font-weight 300
 
 
 	figure svg
@@ -98,14 +99,35 @@
 			text
 				set-type-size(x-small)
 				font-weight 500
-				letter-spacing 0.05em
+				letter-spacing 0.04em
 				&.bg
 					fill none
 					stroke-width 4px
 					stroke $bg
 				&.fg
-					fill $gs-dark
+					fill $secondary
 
 
 		.g-voronoi path
 				fill-opacity 0
+
+	.figure__footer
+		display flex
+		justify-content space-between
+	
+	.legend
+		margin 0
+		color $gs-dark
+		font-weight 500
+		opacity 0
+		transition opacity 250ms ease-in-out
+		&.is-visible
+			opacity 1
+
+		span
+			display inline-block
+			width 1em
+			height 1em
+			background transparent
+			border-radius 50%
+			border 1px solid $gs-dark

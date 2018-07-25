@@ -23,22 +23,29 @@ const $chart = $figure.select('.figure__chart');
 const $svg = $chart.select('svg');
 const $gVis = $svg.select('.g-vis');
 const $gAxis = $svg.select('.g-axis');
+const $gAnnotations = $svg.select('.g-annotations');
+const $toggle = $figure.select('.annotation-toggle input');
 
 let $person = null;
 
+function handleToggle() {
+	const { checked } = this;
+	$gAnnotations.classed('is-visible', checked);
+}
+
 function createAnnotation(annoData) {
-	$gVis.select('.g-annotation').remove();
-	const $anno = $gVis.append('g.g-annotation');
+	$gAnnotations.select('.g-annotation').remove();
+	const $anno = $gAnnotations.append('g.g-annotation');
 
 	const types = {
 		float: Annotate.annotationCustomType(Annotate.annotationLabel, {
 			className: 'float',
-			note: { align: 'middle', orientation: 'leftRight' }
+			note: { dy: 2, align: 'middle', orientation: 'leftRight' }
 		}),
 		line: Annotate.annotationCustomType(Annotate.annotationLabel, {
 			className: 'line',
 			connector: { type: 'line' },
-			note: { align: 'dynamic', orientation: 'leftRight' }
+			note: { dy: 2, align: 'dynamic', orientation: 'leftRight' }
 		})
 	};
 
@@ -47,12 +54,14 @@ function createAnnotation(annoData) {
 	const annotations = annoData.map(d => ({
 		type: types[d.impact_type],
 		note: {
+			dy: 2,
 			title: d.title,
-			bgPadding: { top: pad, left: pad, right: pad, bottom: -pad / 2 },
+			bgPadding: { top: pad, left: pad, right: pad, bottom: pad / 2 },
 			padding: 0,
-			wrap: 250
+			wrap: 230
 		},
 		data: {
+			s: d.name === 'Lil Peep' ? -120 : 0,
 			impact_index: d.impact_index,
 			bin_death_index: d.bin_death_index,
 			diff_percent: d.diff_percent
@@ -60,16 +69,21 @@ function createAnnotation(annoData) {
 		dx: d.dx,
 		dy: d.dy
 	}));
-	console.log(annoData);
 
 	const makeAnnotations = Annotate.annotation()
 		.accessors({
-			x: d => scaleX(d.bin_death_index),
+			x: d => scaleX(d.bin_death_index) + d.s,
 			y: d => d.impact_index * MAX_HEIGHT * OFFSET + scaleY(d.diff_percent)
 		})
 		.annotations(annotations);
 
 	$anno.call(makeAnnotations);
+
+	$anno
+		.selectAll('.annotation-note-title')
+		.selectAll('tspan')
+		.filter((d, i) => i !== 0)
+		.at('dy', '1.4em');
 }
 
 function formatPercent(number) {
@@ -87,16 +101,14 @@ function filter({ name, value }) {
 }
 
 function handleMouseMove(d) {
-	const $person = d3.select(this).parent();
+	const $p = d3.select(this).parent();
 	const [x] = d3.mouse(this);
 	const index = Math.floor(scaleX.invert(x));
 	if (index >= 30) {
 		const datum = d.pageviews.find(p => p.bin_death_index === index);
-		console.log(datum.bin_death_index);
 		const f = formatPercent(datum.diff_percent);
 		const y = scaleY(datum.diff_percent);
-		$person
-			.selectAll('.tip')
+		$p.selectAll('.tip')
 			.text(`${f}`)
 			.at('transform', `translate(${x}, ${y})`);
 	}
@@ -120,7 +132,6 @@ function handleSvgExit() {
 }
 
 function updateDimensions() {
-	const h = window.innerHeight;
 	width = $chart.node().offsetWidth - MARGIN.left - MARGIN.right;
 	height = MAX_HEIGHT * OFFSET * peopleData.length + MAX_HEIGHT;
 }
@@ -132,6 +143,7 @@ function resize() {
 		height: height + MARGIN.top + MARGIN.bottom
 	});
 	$gVis.at('transform', `translate(${MARGIN.left}, ${MARGIN.top})`);
+	$gAnnotations.at('transform', `translate(${MARGIN.left}, ${MARGIN.top})`);
 
 	// scales
 	const extent = d3.extent(pageviewData, d => d.bin_death_index);
@@ -214,12 +226,18 @@ function resize() {
 		const match = d.pageviews.find(p => p.bin_death_index === x);
 		return match.diff_percent;
 	};
+	const getDx = d => {
+		if (+d.impact_x > 75) return d.impact_dx ? +d.impact_dx : -30;
+		return d.impact_dx ? +d.impact_dx : 30;
+	};
+
 	const annoData = peopleData.filter(d => d.impact_annotation).map(d => ({
+		name: d.name,
 		impact_index: d.impact_index,
 		impact_type: d.impact_type,
 		bin_death_index: +d.impact_x,
 		diff_percent: getDiff(d),
-		dx: +d.impact_x > 75 ? -30 : 30,
+		dx: getDx(d),
 		dy: d.impact_dy ? +d.impact_dy : -15,
 		title: d.impact_annotation,
 		padding: 0
@@ -268,6 +286,10 @@ function setupChart() {
 		.on('mouseleave', handleMouseExit);
 }
 
+function setupToggle() {
+	$toggle.on('change', handleToggle);
+}
+
 function loadData(people) {
 	return new Promise((resolve, reject) => {
 		const filenames = ['impact'];
@@ -294,6 +316,7 @@ function init(people) {
 	loadData(people).then(() => {
 		updateDimensions();
 		setupChart();
+		setupToggle();
 		resize();
 	});
 }

@@ -7,10 +7,18 @@
 <figure>
 	<div class='figure__chart'>
 		<img class='legend' src='assets/img/legend.png' alt='legend'>
+		<div class='annotation-ui'>
+			<label class='annotation-toggle'>
+				<input type='checkbox' checked>
+				<span class='slider'></span>
+			</label>
+			<p class='annotation-text'>Toggle annotations</p>
+		</div>
 		<svg>
 			<g>
 				<g class='g-axis'><g class='axis'></g></g>
 				<g class='g-vis'></g>
+				<g class='g-annotations is-visible'></g>
 			</g>
 		</svg>
 	</div>

@@ -19,7 +19,7 @@
 			fill $gs-darkest
 			set-type-size(x-small, false)
 			font-weight 600
-			letter-spacing 0.03em
+			letter-spacing 0.04em
 		&:nth-child(even)
 				path.after--area
 					fill $gs-medium
@@ -53,13 +53,14 @@
 		.tip
 			set-type-size(xx-small, false)
 			font-family $mono
-			font-weight 400
+			font-weight 600
+			letter-spacing 0.05em
 			&--bg
 				fill none
 				stroke-width 3px
 				stroke $bg
 			&--fg
-				stroke $secondary
+				fill $secondary
 
 	.interaction
 		fill-opacity 0
@@ -81,21 +82,78 @@
 	.legend
 		width (842 / 2)px
 		margin 0 auto
-		margin-bottom 2rem
+		margin-bottom 1rem
 
 	
-	.g-annotation
+	.g-annotations
+		opacity 0
+		transition 250ms ease-in-out
+		&.is-visible
+			opacity 1
 		.annotation.float
 			.connector
 				display none
 		.annotation-note-bg
-			fill $off-white
+			fill #fafafa
 			fill-opacity 0.9
 			stroke $secondary
 
 		.annotation-note-content text
-			fill darken($secondary, 5)
-			font-weight 500
+			fill darken($secondary, 10)
+			font-weight 400
 
 		.connector
 			stroke $secondary
+
+
+	.annotation-ui
+		display flex
+		justify-content center
+		margin-bottom 1.5rem
+	
+	.annotation-text
+		margin 0
+		font-family $mono
+		margin-left 0.5em
+		set-type-size(x-small, false)
+		line-height 1.5rem
+		font-weight 400
+
+	.annotation-toggle
+		position relative
+		display inline-block
+		width 3rem
+		height 1.5rem
+		input
+			display none
+
+		input:checked + .slider
+			background-color $gray-dark
+
+		input:focus + .slider
+			box-shadow 0 0 1px $gray-dark
+
+		input:checked + .slider:before
+			transform translateX(1.5rem)
+
+		.slider
+			position absolute
+			cursor pointer
+			top 0
+			left 0
+			right 0
+			bottom 0
+			background-color #ccc
+			transition 0.33s
+			border-radius 1rem
+
+			&:before
+				position absolute
+				content ""
+				height 1.25rem
+				width 1.25rem
+				border-radius 50%
+				left 0.125rem
+				bottom 0.125rem
+				background-color white
+				transition 0.33s
