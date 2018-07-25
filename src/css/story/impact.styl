@@ -64,6 +64,7 @@
 	.interaction
 		fill-opacity 0
 
+
 	figure svg
 		cursor pointer
 		.g-axis
@@ -78,8 +79,23 @@
 				display none 
 
 	.legend
-		width (841 / 2)px
+		width (842 / 2)px
 		margin 0 auto
 		margin-bottom 2rem
 
 	
+	.g-annotation
+		.annotation.float
+			.connector
+				display none
+		.annotation-note-bg
+			fill $off-white
+			fill-opacity 0.9
+			stroke $secondary
+
+		.annotation-note-content text
+			fill darken($secondary, 5)
+			font-weight 500
+
+		.connector
+			stroke $secondary

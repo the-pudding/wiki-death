@@ -798,7 +798,7 @@ const STEP = {
 			pageviews: trimPageviews(d.pageviews, { start: -50, end: 0 })
 		}));
 
-		const median = 251794497 * 2;
+		const median = 251790427 * 2;
 		const annoData = [
 			{
 				value: {

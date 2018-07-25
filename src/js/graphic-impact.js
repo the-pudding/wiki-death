@@ -1,3 +1,5 @@
+import * as Annotate from 'd3-svg-annotation';
+import { getDiffieHellman } from 'crypto';
 import cleanData from './clean-data';
 
 const MARGIN = { top: 160, bottom: 10, left: 0, right: 20 };
@@ -24,6 +26,52 @@ const $gAxis = $svg.select('.g-axis');
 
 let $person = null;
 
+function createAnnotation(annoData) {
+	$gVis.select('.g-annotation').remove();
+	const $anno = $gVis.append('g.g-annotation');
+
+	const types = {
+		float: Annotate.annotationCustomType(Annotate.annotationLabel, {
+			className: 'float',
+			note: { align: 'middle', orientation: 'leftRight' }
+		}),
+		line: Annotate.annotationCustomType(Annotate.annotationLabel, {
+			className: 'line',
+			connector: { type: 'line' },
+			note: { align: 'dynamic', orientation: 'leftRight' }
+		})
+	};
+
+	const pad = FONT_SIZE * 0.75;
+
+	const annotations = annoData.map(d => ({
+		type: types[d.impact_type],
+		note: {
+			title: d.title,
+			bgPadding: { top: pad, left: pad, right: pad, bottom: -pad / 2 },
+			padding: 0,
+			wrap: 250
+		},
+		data: {
+			impact_index: d.impact_index,
+			bin_death_index: d.bin_death_index,
+			diff_percent: d.diff_percent
+		},
+		dx: d.dx,
+		dy: d.dy
+	}));
+	console.log(annoData);
+
+	const makeAnnotations = Annotate.annotation()
+		.accessors({
+			x: d => scaleX(d.bin_death_index),
+			y: d => d.impact_index * MAX_HEIGHT * OFFSET + scaleY(d.diff_percent)
+		})
+		.annotations(annotations);
+
+	$anno.call(makeAnnotations);
+}
+
 function formatPercent(number) {
 	return d3.format('.0%')(number);
 }
@@ -44,11 +92,12 @@ function handleMouseMove(d) {
 	const index = Math.floor(scaleX.invert(x));
 	if (index >= 30) {
 		const datum = d.pageviews.find(p => p.bin_death_index === index);
+		console.log(datum.bin_death_index);
 		const f = formatPercent(datum.diff_percent);
 		const y = scaleY(datum.diff_percent);
 		$person
 			.selectAll('.tip')
-			.text(f)
+			.text(`${f}`)
 			.at('transform', `translate(${x}, ${y})`);
 	}
 }
@@ -86,7 +135,6 @@ function resize() {
 
 	// scales
 	const extent = d3.extent(pageviewData, d => d.bin_death_index);
-	console.log({ extent });
 	scaleX = d3
 		.scaleLinear()
 		.domain(extent)
@@ -159,6 +207,24 @@ function resize() {
 		.select('.tick')
 		.select('text')
 		.at('text-anchor', 'start');
+
+	// ANNOTATIONS
+	const getDiff = d => {
+		const x = +d.impact_x;
+		const match = d.pageviews.find(p => p.bin_death_index === x);
+		return match.diff_percent;
+	};
+	const annoData = peopleData.filter(d => d.impact_annotation).map(d => ({
+		impact_index: d.impact_index,
+		impact_type: d.impact_type,
+		bin_death_index: +d.impact_x,
+		diff_percent: getDiff(d),
+		dx: +d.impact_x > 75 ? -30 : 30,
+		dy: d.impact_dy ? +d.impact_dy : -15,
+		title: d.impact_annotation,
+		padding: 0
+	}));
+	createAnnotation(annoData);
 }
 
 function setupChart() {
@@ -168,6 +234,8 @@ function setupChart() {
 		const mb = d3.median(b.pageviews, v => v.diff_percent);
 		return d3.descending(ma, mb);
 	});
+
+	peopleData.forEach((d, i) => (d.impact_index = i));
 
 	$svg.on('mouseleave', handleSvgExit);
 	$person = $gVis.selectAll('.person');
@@ -224,7 +292,6 @@ function loadData(people) {
 
 function init(people) {
 	loadData(people).then(() => {
-		console.log(peopleData);
 		updateDimensions();
 		setupChart();
 		resize();
