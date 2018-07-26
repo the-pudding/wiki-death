@@ -39,13 +39,16 @@ section
 	pointer-events none
 
 	.annotation-note-title
-		fill $gs-dark
+		fill $secondary
 		set-type-size(x-small, false)
-		font-weight 500
-		letter-spacing 0.05em
+		font-weight 400
+		// letter-spacing 0.05em
 
 	.connector, .note-line
-		stroke $gs-dark
+		stroke $secondary
+
+	.annotation-subject path
+		stroke $secondary
 
 .is-mobile
 	.person a, .name a

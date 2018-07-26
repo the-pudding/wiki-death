@@ -11,10 +11,12 @@
 		path.after--area
 			stroke none
 			fill $gs-dark
+			transition fill 100ms ease-in-out
 		path.after--line
 			fill none
 			stroke $primary
 			stroke-width 1.5px
+			transition stroke 100ms ease-in-out
 		.name
 			fill $gs-darkest
 			set-type-size(x-small, false)
@@ -54,7 +56,7 @@
 			set-type-size(xx-small, false)
 			font-family $mono
 			font-weight 600
-			letter-spacing 0.05em
+			letter-spacing 0.04em
 			&--bg
 				fill none
 				stroke-width 3px

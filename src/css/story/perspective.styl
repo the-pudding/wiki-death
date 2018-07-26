@@ -65,13 +65,13 @@
 		.person
 			&.is-active
 				circle
-					fill $primary
+					fill $secondary
 			&.is-faded
 				circle
 					fill $gs-light
 				&.is-active
 					circle
-						fill $primary
+						fill $secondary
 			path
 				fill none
 				stroke $gs-medium
@@ -117,8 +117,8 @@
 	
 	.legend
 		margin 0
-		color $gs-dark
-		font-weight 500
+		color $secondary
+		font-weight 400
 		opacity 0
 		transition opacity 250ms ease-in-out
 		&.is-visible
@@ -130,4 +130,17 @@
 			height 1em
 			background transparent
 			border-radius 50%
-			border 1px solid $gs-dark
+			border 1px solid $secondary
+
+	.annotation-note-bg
+		fill #fafafa
+		fill-opacity 0.9
+		stroke $secondary
+
+	.connector
+		stroke $secondary
+
+	.note-line
+		display none
+
+		

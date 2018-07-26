@@ -4,6 +4,7 @@ import * as Annotate from 'd3-svg-annotation';
 import cleanData from './clean-data';
 import tooltip from './tooltip';
 
+const MEDIAN = 251787588 * 2; // july 26
 const MARGIN = { top: 20, bottom: 40, left: 50, right: 50 };
 const FONT_SIZE = 12;
 const PRINCE_ID = '57317';
@@ -39,7 +40,8 @@ const $gVis = $svg.select('.g-vis');
 const $gAxis = $svg.select('.g-axis');
 const $gVor = $svg.select('.g-voronoi');
 const $people = $gVis.select('.people');
-const $legend = $figure.select('.legend')
+const $legend = $figure.select('.legend');
+const $filter = d3.select('.filters');
 
 let $tip = null;
 
@@ -92,7 +94,13 @@ function getLine({ scaleX, scaleY }) {
 		.defined(d => d.views_adjusted);
 }
 
-function updateAxis({ scaleX, scaleY, dur, ticks = d3.timeMonth.every(1) }) {
+function updateAxis({
+	scaleX,
+	scaleY,
+	dur,
+	ticks = d3.timeMonth.every(1),
+	ease = EASE
+}) {
 	const axisY = d3
 		.axisLeft(scaleY)
 		.tickFormat((val, i) => {
@@ -108,7 +116,7 @@ function updateAxis({ scaleX, scaleY, dur, ticks = d3.timeMonth.every(1) }) {
 		.select('.axis--y')
 		.transition()
 		.duration(dur.slow)
-		.ease(EASE)
+		.ease(ease)
 		.call(axisY)
 		.at('transform', `translate(${MARGIN.left}, ${MARGIN.top})`);
 
@@ -138,7 +146,7 @@ function updateAxis({ scaleX, scaleY, dur, ticks = d3.timeMonth.every(1) }) {
 		.select('.axis--x')
 		.transition()
 		.duration(dur.slow)
-		.ease(EASE)
+		.ease(ease)
 		.call(axisX)
 		.at(
 			'transform',
@@ -302,16 +310,19 @@ function createAnnotation({ scaleX, scaleY, annoData, dur = 0, delay = 0 }) {
 		className: 'custom',
 		connector: { type: 'line' },
 		note: {
-			lineType: 'horizontal',
+			// lineType: 'horizontal',
 			align: 'dynamic'
 		}
 	});
+
+	const pad = FONT_SIZE * 0.75;
 
 	const annotations = annoData.map(d => ({
 		note: {
 			title: d.title,
 			padding: d.padding,
-			wrap: 120
+			wrap: d.wrap || 110,
+			bgPadding: { top: pad * 0.825, left: pad, right: pad, bottom: 0 }
 		},
 		data: { date: d.value.date, views_adjusted: d.value.views_adjusted },
 		dx: d.dx,
@@ -331,6 +342,13 @@ function createAnnotation({ scaleX, scaleY, annoData, dur = 0, delay = 0 }) {
 		.annotations(annotations);
 
 	$anno.call(makeAnnotations);
+
+	$anno
+		.selectAll('.annotation-note-title')
+		.selectAll('tspan')
+		.filter((d, i) => i !== 0)
+		.at('dy', '1.4em');
+
 	$anno
 		.transition()
 		.duration(dur)
@@ -392,6 +410,7 @@ const STEP = {
 			{
 				value: data[0].pageviews[data[0].pageviews.length - 1],
 				title: 'Lemonade is released',
+				wrap: 150,
 				padding: FONT_SIZE * 0.5,
 				dx: -50,
 				dy: 50,
@@ -497,25 +516,64 @@ const STEP = {
 			const $prince = $personMerge.filter(d => d.pageid === PRINCE_ID);
 			const $bey = $personMerge.filter(d => d.pageid === 'beyonce');
 			$prince.call(resetLine);
+
+			// NEW
+			const segments = [0];
+			const princeData = data.find(d => d.pageid !== 'beyonce').pageviews;
+
+			princeData.forEach((d, i) => {
+				if (i === 0) return null;
+
+				const prevData = princeData[i - 1];
+				const tempPath = $svg
+					.append('path.temp')
+					.datum([prevData, d])
+					.at('d', line);
+
+				const prevSegment = segments[i - 1];
+				const newSegment = prevSegment + tempPath.node().getTotalLength();
+				segments.push(newSegment);
+				tempPath.remove();
+			});
+
+			const totalLength = $prince
+				.selectAll('path')
+				.node()
+				.getTotalLength();
+
+			$prince.selectAll('circle').at('r', 0);
+
+			const updateCircles = len => {
+				$prince
+					.selectAll('circle')
+					.filter((d, i) => i < len)
+					// .transition()
+					// .duration(dur.fast)
+					// .delay((d, i, n) => dur.slow * EASE(i / n.length))
+					// .ease(EASE)
+					.at('r', d => (d.bin_death_index === 0 ? MAX_R : MIN_R))
+					.st(
+						'stroke-width',
+						d => (d.bin_death_index === 0 ? MAX_R / 2 : MIN_R / 2)
+					);
+			};
+
 			$prince
 				.selectAll('path')
 				.transition()
 				.duration(dur.slow)
 				.ease(EASE)
-				.at('stroke-dashoffset', 0);
-
-			$prince
-				.selectAll('circle')
-				.at('r', 0)
-				.transition()
-				.duration(dur.fast)
-				.delay((d, i, n) => dur.slow * EASE(i / n.length))
-				.ease(EASE)
-				.at('r', d => (d.bin_death_index === 0 ? MAX_R : MIN_R))
-				.st(
-					'stroke-width',
-					d => (d.bin_death_index === 0 ? MAX_R / 2 : MIN_R / 2)
-				);
+				.tween('stroke-dashoffset', (d, i, n) => {
+					const $p = d3.select(n[i]);
+					const interpolator = d3.interpolate(totalLength, 0);
+					const sideEffect = time => {
+						const offset = interpolator(time);
+						const points = segments.filter(s => s <= totalLength - offset);
+						updateCircles(princeData.slice(0, points.length).length);
+						$p.at('stroke-dashoffset', offset);
+					};
+					return sideEffect;
+				});
 
 			$bey
 				.selectAll('circle')
@@ -585,14 +643,14 @@ const STEP = {
 				.selectAll('path')
 				.transition()
 				.duration(leave ? 0 : dur.slow)
-				.ease(EASE)
+				.ease(d3.easeCubicIn)
 				.at('stroke-dashoffset', 0);
 
 			$prince
 				.selectAll('circle')
 				.transition()
-				.duration(dur.medium)
-				.delay(dur.slow)
+				.duration(dur.fast)
+				.delay(leave ? 0 : dur.slow - 50)
 				.ease(EASE)
 				.at('r', d => (d.bin_death_index === 0 ? MAX_R : MIN_R))
 				.st(
@@ -798,12 +856,11 @@ const STEP = {
 			pageviews: trimPageviews(d.pageviews, { start: -50, end: 0 })
 		}));
 
-		const median = 251790427 * 2;
 		const annoData = [
 			{
 				value: {
 					date: new Date(2016, 5, 20),
-					views_adjusted: (1354216 / 500201369) * median
+					views_adjusted: (1354216 / 500201369) * MEDIAN
 				},
 				title: 'LeBron James (NBA Finals)',
 				padding: 0,
@@ -814,7 +871,7 @@ const STEP = {
 			{
 				value: {
 					date: new Date(2017, 0, 20),
-					views_adjusted: (3635774 / 538696302) * median
+					views_adjusted: (3635774 / 538696302) * MEDIAN
 				},
 				title: 'Donald Trump (inauguration)',
 				padding: 0,
@@ -825,7 +882,7 @@ const STEP = {
 			{
 				value: {
 					date: new Date(2018, 4, 19),
-					views_adjusted: (4503531 / 530076204) * median
+					views_adjusted: (4503531 / 530076204) * MEDIAN
 				},
 				title: ' Meghan Markle (royal wedding)',
 				padding: 0,
@@ -939,7 +996,7 @@ function updateDimensions() {
 function updateStep({ reverse = true, leave = false }) {
 	// console.log({ currentStep, reverse, leave });
 	if (STEP[currentStep]) STEP[currentStep]({ reverse, leave });
-	$legend.classed('is-visible', currentStep === 'compare')
+	$legend.classed('is-visible', currentStep === 'compare');
 }
 
 function resize() {
@@ -984,13 +1041,18 @@ function handleHoverEnter() {
 	hoverEnabled = true;
 	$chart.classed('is-hover', true);
 	$article.classed('is-disabled', true);
+	$filter.classed('is-onscreen', true);
 }
 
-function handleHoverExit() {
-	hoverEnabled = false;
-	$chart.classed('is-hover', false);
-	$article.classed('is-disabled', false);
-	tooltip.hide($tip);
+function handleHoverExit({ direction }) {
+	if (direction === 'up') {
+		$filter.classed('is-onscreen', false);
+		hoverEnabled = false;
+		$chart.classed('is-hover', false);
+		$article.classed('is-disabled', false);
+		$people.selectAll('.person').classed('is-active', false);
+		tooltip.hide($tip);
+	}
 }
 
 function setupScroller() {

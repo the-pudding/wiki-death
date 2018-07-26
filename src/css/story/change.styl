@@ -20,8 +20,11 @@
 		width 25%
 		vertical-align bottom
 		&:first-child
-			min-width 20rem
-			width 20rem
+			min-width 9rem
+			width 9rem
+			+mq('bp-4')
+				min-width 20rem
+				width 20rem
 	thead
 		th
 			text-transform uppercase
@@ -29,6 +32,10 @@
 			padding 0.25em 0.5em
 			set-type-size(xxx-small, false)
 			font-weight 600
+			&:nth-child(2), &:nth-child(3) 
+				display none
+				+mq('bp-4')
+					display table-cell
 		.number
 			text-align right
 	tbody
@@ -48,7 +55,10 @@
 			&:nth-child(4)
 				font-weight 600
 				color #1a1a1a
-
+			&:nth-child(2), &:nth-child(3) 
+				display none
+				+mq('bp-4')
+					display table-cell
 		.number
 			font-family $mono
 			text-align right
@@ -62,6 +72,9 @@
 				set-type-size(xx-small)
 				font-weight 300
 				margin-left 0.5em
+				display none
+				+mq('bp-4')
+					display inline
 
 	.toggle-table
 		text-align center

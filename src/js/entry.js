@@ -18,10 +18,10 @@ function resize() {
 	const width = $body.node().offsetWidth;
 	if (previousWidth !== width) {
 		previousWidth = width;
-		graphicPerspective.resize();
+		// graphicPerspective.resize();
 		graphicChange.resize();
-		graphicCare.resize();
-		graphicImpact.resize();
+		// graphicCare.resize();
+		// graphicImpact.resize();
 	}
 }
 
@@ -49,12 +49,12 @@ function init() {
 	// kick off graphic code
 	d3.loadData('assets/data/people.csv', (err, response) => {
 		const peopleData = cleanData.people(response[0]);
-		graphicPerspective.init(peopleData);
+		// graphicPerspective.init(peopleData);
 		graphicChange.init(peopleData);
-		graphicCare.init(peopleData);
-		graphicImpact.init(peopleData);
-		filter({ name: 'Industry', data: peopleData });
-		filter({ name: 'Cause', data: peopleData });
+		// graphicCare.init(peopleData);
+		// graphicImpact.init(peopleData);
+		// filter({ name: 'Industry', data: peopleData });
+		// filter({ name: 'Cause', data: peopleData });
 		// preloadImages(peopleData);
 	});
 }
