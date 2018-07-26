@@ -19,9 +19,11 @@
 			transition stroke 100ms ease-in-out
 		.name
 			fill $gs-darkest
-			set-type-size(x-small, false)
-			font-weight 600
+			set-type-size(xxx-small, false)
+			font-weight 500
 			letter-spacing 0.04em
+			+mq('bp-4')
+				set-type-size(x-small, false)
 		&:nth-child(even)
 				path.after--area
 					fill $gs-medium
@@ -78,11 +80,17 @@
 				stroke $gs-medium
 				stroke-width 1px
 				stroke-dasharray 4px 4px
+			.tick:nth-of-type(2), .tick:nth-of-type(3)
+				opacity 0
+				+mq('bp-3')
+					opacity 1
 			path
 				display none 
 
+			
+
 	.legend
-		width (842 / 2)px
+		max-width (842 / 2)px
 		margin 0 auto
 		margin-bottom 1rem
 
@@ -91,7 +99,10 @@
 		opacity 0
 		transition 250ms ease-in-out
 		&.is-visible
-			opacity 1
+			opacity 0
+			+mq('bp-4')
+				opacity 1
+			
 		.annotation.float
 			.connector
 				display none
@@ -109,9 +120,11 @@
 
 
 	.annotation-ui
-		display flex
 		justify-content center
 		margin-bottom 1.5rem
+		display none
+		+mq('bp-4')
+			display flex
 	
 	.annotation-text
 		margin 0

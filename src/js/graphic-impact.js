@@ -2,14 +2,15 @@ import * as Annotate from 'd3-svg-annotation';
 import { getDiffieHellman } from 'crypto';
 import cleanData from './clean-data';
 
-const MARGIN = { top: 160, bottom: 10, left: 0, right: 20 };
+const MARGIN = { top: 160, bottom: 10, left: 0, right: 12 };
 const FONT_SIZE = 12;
 const REM = 16;
-const MAX_HEIGHT = FONT_SIZE * 5;
-const TEXT_WIDTH = REM * 8;
 const OFFSET = 0.4;
 const NUM_DAYS = 91;
+const BP = 640;
 
+let maxHeight = FONT_SIZE * 5;
+let textWidth = REM * 8;
 let width = 0;
 let height = 0;
 let peopleData = null;
@@ -73,7 +74,7 @@ function createAnnotation(annoData) {
 	const makeAnnotations = Annotate.annotation()
 		.accessors({
 			x: d => scaleX(d.bin_death_index) + d.s,
-			y: d => d.impact_index * MAX_HEIGHT * OFFSET + scaleY(d.diff_percent)
+			y: d => d.impact_index * maxHeight * OFFSET + scaleY(d.diff_percent)
 		})
 		.annotations(annotations);
 
@@ -133,11 +134,27 @@ function handleSvgExit() {
 
 function updateDimensions() {
 	width = $chart.node().offsetWidth - MARGIN.left - MARGIN.right;
-	height = MAX_HEIGHT * OFFSET * peopleData.length + MAX_HEIGHT;
+	height = maxHeight * OFFSET * peopleData.length + maxHeight;
+}
+
+function adjustTspan($name) {
+	$name.each((d, i, n) => {
+		const $n = d3.select(n[i]);
+		const $t = $n.selectAll('tspan');
+		const sz = $t.size();
+		$t.filter((d, i) => i !== 0).at('dy', '1.2em');
+		const y = sz > 1 ? -10 : -5;
+		$n.at('transform', `translate(0, ${y})`);
+	});
 }
 
 function resize() {
 	updateDimensions();
+	const mobile = d3.select('body').node().offsetWidth < BP;
+	textWidth = mobile ? REM * 5 : REM * 8;
+	maxHeight = mobile ? FONT_SIZE * 6.5 : FONT_SIZE * 5;
+	if (mobile) MARGIN.top = 190;
+
 	$svg.at({
 		width: width + MARGIN.left + MARGIN.right,
 		height: height + MARGIN.top + MARGIN.bottom
@@ -150,7 +167,7 @@ function resize() {
 	scaleX = d3
 		.scaleLinear()
 		.domain(extent)
-		.range([TEXT_WIDTH + FONT_SIZE, width]);
+		.range([textWidth + FONT_SIZE, width]);
 
 	// const maxV = d3.max(pageviewData, v => Math.abs(v.diff_percent));
 	// console.log(maxV);
@@ -159,7 +176,7 @@ function resize() {
 	scaleY = d3
 		.scaleLinear()
 		.domain([0, max])
-		.range([MAX_HEIGHT, 0]);
+		.range([maxHeight, 0]);
 
 	const line = d3
 		.line()
@@ -176,11 +193,25 @@ function resize() {
 		.curve(d3.curveMonotoneX)
 		.defined(d => d.ma);
 
-	$person.select('.name').at({
-		x: TEXT_WIDTH,
-		y: scaleY.range()[0],
-		'text-anchor': 'end'
-	});
+	const $name = $person.select('.name');
+
+	$name
+		.at({
+			x: textWidth,
+			y: scaleY.range()[0],
+			transform: 'translate(0, 0)'
+		})
+		.selectAll('tspan')
+		.remove();
+
+	if (mobile) {
+		const $tspan = $name.tspans(d => d3.wordwrap(d.display, 11));
+		adjustTspan($name);
+	} else
+		$person
+			.select('.name')
+			.text(d => d.display)
+			.at('text-anchor', 'end');
 
 	$person
 		.select('.after--area')
@@ -191,10 +222,10 @@ function resize() {
 		.datum(d => d.pageviews)
 		.at('d', line);
 
-	$person.at('transform', (d, i) => `translate(0,${i * MAX_HEIGHT * OFFSET})`);
+	$person.at('transform', (d, i) => `translate(0,${i * maxHeight * OFFSET})`);
 
-	const rectH = MAX_HEIGHT * OFFSET;
-	const rectY = MAX_HEIGHT * (1 - OFFSET);
+	const rectH = maxHeight * OFFSET;
+	const rectY = maxHeight * (1 - OFFSET);
 	$person.select('.interaction').at({ width, height: rectH, y: rectY });
 
 	const axis = d3
@@ -213,12 +244,20 @@ function resize() {
 		.call(axis)
 		.at(
 			'transform',
-			`translate(${MARGIN.left}, ${MARGIN.top - MAX_HEIGHT * OFFSET})`
+			`translate(${MARGIN.left}, ${MARGIN.top - maxHeight * OFFSET})`
 		);
-	$gAxis
-		.select('.tick')
-		.select('text')
-		.at('text-anchor', 'start');
+
+	if (mobile) {
+		$gAxis
+			.selectAll('.tick')
+			.select('text')
+			.at('text-anchor', 'middle');
+	} else {
+		$gAxis
+			.select('.tick')
+			.select('text')
+			.at('text-anchor', 'start');
+	}
 
 	// ANNOTATIONS
 	const getDiff = d => {
@@ -265,7 +304,7 @@ function setupChart() {
 
 	$person = $personEnter.merge($person);
 
-	$person.append('text.name').text(d => d.display);
+	$person.append('text.name');
 
 	$person.append('path.after--area');
 
