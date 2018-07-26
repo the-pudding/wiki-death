@@ -24,7 +24,8 @@
 
 		.figure__list
 			position relative
-			padding-left 1rem
+			+mq('bp-4')
+				padding-left 1rem
 		
 		.people
 			display flex
@@ -32,11 +33,15 @@
 			// flex 0 1 auto
 
 		.person
-			width 9.1rem
+			width 8.5rem
 			padding 0.25em
-			set-type-size(x-small, false)
+			set-type-size(xx-small, false)
 			font-weight 500
 			cursor pointer
+			+mq('bp-4')
+				width 9.1rem
+				set-type-size(x-small, false)
+
 			&.is-faded
 				a
 					color $gs-light
@@ -52,22 +57,30 @@
 		
 		.week
 			display flex
-			align-items center
 			margin-bottom 0.5rem
 			padding-bottom 0.5rem
 			border-bottom 1px solid $gs-light
+			flex-direction column
+			+mq('bp-4')
+				flex-direction row
+				align-items center
 		
 		p.label
-			set-type-size(small, false)
+			set-type-size(x-small, false)
 			font-family $mono
 			line-height 1
-			margin 0
+			margin 0.5em 0
 			min-width 2.5rem
-			text-align right
 			padding-right 0.5em
 			color $primary
 			font-weight 600
 			cursor pointer
+			+mq('bp-4')
+				set-type-size(small, false)
+				text-align right
+				margin 0
+				span
+					display none
 
 	.figure__label
 		margin 0
@@ -77,3 +90,6 @@
 		font-family $mono
 		transform rotate(-90deg) translate(-33%, 0)
 		transform-origin 0 50%
+		display none
+		+mq('bp-4')
+			display block

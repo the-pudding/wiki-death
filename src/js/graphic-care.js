@@ -73,7 +73,10 @@ function setupChart() {
 	$li.append('p.label').html(d => {
 		if (d.key === MAX_WEEKS + 1) return `${d.key}+`;
 		if (d.key === MAX_WEEKS + 2) return 'TBD';
-		return `${d.key}&nbsp;`;
+
+		const suffix = d.key === 1 ? '' : 's';
+		const first = d.key === 0 ? ' until normal traffic' : '';
+		return `${d.key}&nbsp;<span>week${suffix}${first}</span>`;
 	});
 
 	const $people = $li.append('ul.people');
