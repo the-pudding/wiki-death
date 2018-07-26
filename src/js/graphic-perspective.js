@@ -11,13 +11,15 @@ const PRINCE_ID = '57317';
 const BEYONCE_LAST = '20160425';
 const DATE_START = new Date(2016, 2, 1);
 const DATE_END = new Date(2016, 3, 27);
-const MIN_R = 4;
-const MAX_R = 16;
 const SEC = 1000;
 const DURATION = SEC * 3;
 const EASE = d3.easeCubicInOut;
 const HEADER_HEIGHT = d3.select('header').node().offsetHeight;
+const BP = 640
 
+let minR = 4;
+let maxR = 16;
+let mobile = false
 let width = 0;
 let height = 0;
 let innerHeight = 0;
@@ -82,7 +84,7 @@ function getScaleR(data) {
 		.scaleSqrt()
 		.domain(d3.extent(data, d => d.death_views_adjusted_2))
 		.nice()
-		.range([MIN_R, MAX_R]);
+		.range([minR, maxR]);
 }
 
 function getLine({ scaleX, scaleY }) {
@@ -131,16 +133,21 @@ function updateAxis({
 
 	function multiFormat(date) {
 		return (d3.timeYear(date) < date
-			? d3.timeFormat('%b')
+			? (mobile ? () => {} : d3.timeFormat('%b'))
 			: d3.timeFormat('%Y'))(date);
 	}
 
+	function singleFormat(date) {
+		return d3.timeFormat('%b')(date)
+	}
+
+	const formatter = mobile && scaleX.domain()[1] > (new Date(2017,0)) ? multiFormat : singleFormat
 	const axisX = d3
 		.axisBottom(scaleX)
 		.ticks(ticks)
 		.tickSize(0)
 		.tickPadding(0)
-		.tickFormat(multiFormat);
+		.tickFormat(formatter);
 
 	$gAxis
 		.select('.axis--x')
@@ -200,7 +207,7 @@ function exitPerson($person, dur) {
 		.remove();
 }
 
-function enterCircles($person, { scaleX, scaleY, r = MIN_R }) {
+function enterCircles($person, { scaleX, scaleY, r = minR }) {
 	const $c = $person
 		.select('.circles')
 		.selectAll('circle')
@@ -287,7 +294,7 @@ function handleVorEnter(d) {
 			const y = +$circle.at('data-y') + MARGIN.top;
 
 			const pos = { x, y };
-			tooltip.show({ el: $tip, d: datum, pos });
+			tooltip.show({ el: $tip, d: datum, pos, mobile });
 		}
 	}
 }
@@ -329,7 +336,7 @@ function createAnnotation({ scaleX, scaleY, annoData, dur = 0, delay = 0 }) {
 		dy: d.dy,
 		subject: {
 			radius: d.r,
-			radiusPadding: MIN_R
+			radiusPadding: minR
 		}
 	}));
 
@@ -391,8 +398,8 @@ const STEP = {
 			.transition()
 			.duration(dur.fast)
 			.ease(EASE)
-			.at('r', MIN_R)
-			.st('stroke-width', MIN_R / 2);
+			.at('r', minR)
+			.st('stroke-width', minR / 2);
 
 		// ANNOTATION
 		createAnnotation({ scaleX, scaleY, annoData: [] });
@@ -412,9 +419,9 @@ const STEP = {
 				title: 'Lemonade is released',
 				wrap: 150,
 				padding: FONT_SIZE * 0.5,
-				dx: -50,
+				dx: mobile ? -25 : -50,
 				dy: 50,
-				r: MAX_R * 1.25
+				r: maxR * 1.25
 			}
 		];
 
@@ -443,8 +450,8 @@ const STEP = {
 			.transition()
 			.duration(dur.fast)
 			.ease(EASE)
-			.at('r', MAX_R)
-			.st('stroke-width', MAX_R / 2)
+			.at('r', maxR)
+			.st('stroke-width', maxR / 2)
 			.at(
 				'transform',
 				d => `translate(${scaleX(d.date)}, ${scaleY(d.views_adjusted)})`
@@ -486,7 +493,7 @@ const STEP = {
 			.append('g.person')
 			.call(enterPerson);
 		const $personMerge = $personEnter.merge($person);
-		$personMerge.call(enterCircles, { scaleX, scaleY, r: MIN_R });
+		$personMerge.call(enterCircles, { scaleX, scaleY, r: minR });
 		$personMerge.call(updatePath, { scaleX, scaleY, render: !reverse });
 
 		// TRANSITION
@@ -507,7 +514,7 @@ const STEP = {
 				.duration(dur.slow)
 				.ease(EASE)
 				.st('opacity', 1)
-				.at('r', MIN_R)
+				.at('r', minR)
 				.at(
 					'transform',
 					d => `translate(${scaleX(d.date)}, ${scaleY(d.views_adjusted)})`
@@ -551,10 +558,10 @@ const STEP = {
 					// .duration(dur.fast)
 					// .delay((d, i, n) => dur.slow * EASE(i / n.length))
 					// .ease(EASE)
-					.at('r', d => (d.bin_death_index === 0 ? MAX_R : MIN_R))
+					.at('r', d => (d.bin_death_index === 0 ? maxR : minR))
 					.st(
 						'stroke-width',
-						d => (d.bin_death_index === 0 ? MAX_R / 2 : MIN_R / 2)
+						d => (d.bin_death_index === 0 ? maxR / 2 : minR / 2)
 					);
 			};
 
@@ -580,8 +587,8 @@ const STEP = {
 				.transition()
 				.duration(dur.fast)
 				.ease(EASE)
-				.at('r', MIN_R)
-				.st('stroke-width', MIN_R / 2);
+				.at('r', minR)
+				.st('stroke-width', minR / 2);
 		}
 
 		// ANNOTATION
@@ -652,10 +659,10 @@ const STEP = {
 				.duration(dur.fast)
 				.delay(leave ? 0 : dur.slow - 50)
 				.ease(EASE)
-				.at('r', d => (d.bin_death_index === 0 ? MAX_R : MIN_R))
+				.at('r', d => (d.bin_death_index === 0 ? maxR : minR))
 				.st(
 					'stroke-width',
-					d => (d.bin_death_index === 0 ? MAX_R / 2 : MIN_R / 2)
+					d => (d.bin_death_index === 0 ? maxR / 2 : minR / 2)
 				);
 		};
 
@@ -682,14 +689,14 @@ const STEP = {
 				.delay(d => (d.pageid === 'beyonce' ? dur.slow : 0))
 				.ease(EASE)
 				.st('opacity', 1)
-				.at('r', d => (d.bin_death_index === 0 ? MAX_R : MIN_R))
+				.at('r', d => (d.bin_death_index === 0 ? maxR : minR))
 				.at(
 					'transform',
 					d => `translate(${scaleX(d.date)}, ${scaleY(d.views_adjusted)})`
 				)
 				.st(
 					'stroke-width',
-					d => (d.bin_death_index === 0 ? MAX_R / 2 : MIN_R / 2)
+					d => (d.bin_death_index === 0 ? maxR / 2 : minR / 2)
 				);
 		} else {
 			$personMerge
@@ -715,7 +722,7 @@ const STEP = {
 				)
 				.st(
 					'stroke-width',
-					d => (d.bin_death_index === 0 ? MAX_R / 2 : MIN_R / 2)
+					d => (d.bin_death_index === 0 ? maxR / 2 : minR / 2)
 				);
 		}
 
@@ -785,7 +792,7 @@ const STEP = {
 				})
 				.ease(EASE)
 				.at('r', d => scaleR(d.views_adjusted))
-				.at('stroke-width', MIN_R / 2);
+				.at('stroke-width', minR / 2);
 
 			$personMerge
 				.selectAll('text')
@@ -803,7 +810,16 @@ const STEP = {
 					return dur.slow * (index / peopleData.length);
 				})
 				.ease(EASE)
-				.st('opacity', d => (d.perspective_show ? 1 : 0));
+				.st('opacity', d => {
+					const year = +d.timestamp_of_death.substring(0,4)
+					const month = +d.timestamp_of_death.substring(4, 6) - 1
+					const last = new Date(2018, 2)
+					const date = new Date(year, month)
+					if (mobile && d.display === 'Antonin Scalia') return 0
+					if (mobile && d.perspective_show &&  date < last) return 1
+					if (!mobile && d.perspective_show) return 1
+					return 0
+				});
 
 			$personMerge.filter(d => d.perspective_show).raise();
 			$personMerge
@@ -856,7 +872,7 @@ const STEP = {
 			pageviews: trimPageviews(d.pageviews, { start: -50, end: 0 })
 		}));
 
-		const annoData = [
+		let annoData = [
 			{
 				value: {
 					date: new Date(2016, 5, 20),
@@ -866,7 +882,7 @@ const STEP = {
 				padding: 0,
 				dx: Math.floor(width * 0.01),
 				dy: -Math.floor(width * 0.07),
-				r: MAX_R / 2
+				r: maxR / 2
 			},
 			{
 				value: {
@@ -877,7 +893,7 @@ const STEP = {
 				padding: 0,
 				dx: Math.floor(width * 0.02),
 				dy: -Math.floor(width * 0.03),
-				r: MAX_R / 2
+				r: maxR / 2
 			},
 			{
 				value: {
@@ -888,9 +904,16 @@ const STEP = {
 				padding: 0,
 				dx: -Math.floor(width * 0.05),
 				dy: -Math.floor(width * 0.05),
-				r: MAX_R / 2
+				r: maxR / 2
 			}
 		];
+
+		annoData = annoData.filter((d,i) => {
+			if (!mobile) return true
+			if (i === 1) return false
+			return true
+		})
+		
 
 		// SCALE
 		data.sort((a, b) =>
@@ -979,9 +1002,11 @@ const STEP = {
 			.data(polygons)
 			.enter()
 			.append('path')
-			.on('mouseenter', handleVorEnter)
 			.merge($vorPath)
 			.at('d', d => (d ? `M${d.join('L')}Z` : null));
+
+		if (mobile) $vorPath.on('click', handleVorEnter)
+		else $vorPath.on('mouseenter', handleVorEnter)
 
 		exitPerson($person, dur.fast);
 	}
@@ -989,7 +1014,12 @@ const STEP = {
 
 function updateDimensions() {
 	innerHeight = window.innerHeight;
-	height = Math.floor(innerHeight * 0.8) - MARGIN.top - MARGIN.bottom;
+	mobile = d3.select('body').node().offsetWidth < BP
+	if (mobile) MARGIN.right = 10
+	minR = mobile ? 2 : 4
+	maxR = mobile ? 8 : 16
+	const frac = mobile ? 0.7 : 0.8
+	height = Math.floor(innerHeight * frac) - MARGIN.top - MARGIN.bottom;
 	width = $chart.node().offsetWidth - MARGIN.left - MARGIN.right;
 }
 
@@ -1004,8 +1034,8 @@ function resize() {
 
 	$figure.st({
 		height: innerHeight,
-		top: HEADER_HEIGHT,
-		'padding-bottom': HEADER_HEIGHT
+		top: mobile ? 0 : HEADER_HEIGHT,
+		'padding-bottom': mobile ? 0 : HEADER_HEIGHT
 	});
 
 	$svg.at({
@@ -1076,9 +1106,12 @@ function setupScroller() {
 
 function setupTooltip() {
 	$tip = tooltip.init({ container: $chart });
-	$svg.on('mouseleave', () => {
-		tooltip.hide($tip);
-	});
+	if (mobile) {
+		$svg.on('mouseleave', () => {
+			tooltip.hide($tip);
+		});
+	}
+	if (mobile) $tip[0].select('.close').on('click', tooltip.hide($tip))
 }
 
 function loadData(people) {

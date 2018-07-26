@@ -1,5 +1,4 @@
 import * as Annotate from 'd3-svg-annotation';
-import { getDiffieHellman } from 'crypto';
 import cleanData from './clean-data';
 
 const MARGIN = { top: 160, bottom: 10, left: 0, right: 12 };

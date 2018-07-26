@@ -35,7 +35,7 @@ function hide(el) {
 	el[0].classed('is-visible', false);
 }
 
-function show({ el, d, pos }) {
+function show({ el, d, pos, mobile }) {
 	// content
 	el.forEach($el => {
 		$el.select('.name').text(d.display);
@@ -54,13 +54,17 @@ function show({ el, d, pos }) {
 
 	const className = getPos({ el, pos });
 
-	el[0]
-		.st({ top, left })
-		.classed('is-visible', true)
-		.classed('is-center', className.center)
-		.classed('is-right', className.right)
-		.classed('is-left', className.left)
-		.classed('is-bottom', className.bottom);
+	if (!mobile) {
+		el[0]
+			.st({ top, left })
+			.classed('is-visible', true)
+			.classed('is-center', className.center)
+			.classed('is-right', className.right)
+			.classed('is-left', className.left)
+			.classed('is-bottom', className.bottom);
+	} else {
+		el[0].classed('is-visible', true);
+	}
 }
 
 function init({ container }) {
@@ -81,7 +85,10 @@ function init({ container }) {
 
 		$info.append('p.cause').html('Cause of death: <span></span>');
 
-		$el.append('div.stats');
+		$el
+			.append('div.close')
+			.append('button')
+			.text('Close');
 	});
 
 	return [tip, tipH];

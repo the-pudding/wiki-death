@@ -18,6 +18,9 @@
 
 	figcaption
 		max-width $column-width
+		set-type-size(xx-small, true)
+		+mq('bp-4')
+			set-type-size(x-small, true)
 
 	article
 		position relative
@@ -81,8 +84,10 @@
 					opacity 0
 			
 			circle
-				stroke $bg
+				stroke $gs-dark
 				fill $gs-dark
+				+mq('bp-4')
+					stroke $bg
 
 				&.is-transparent
 					opacity 0
@@ -95,11 +100,16 @@
 					stroke $primary
 				circle
 					fill $primary
+					stroke $primary
+					+mq('bp-4')
+						stroke $bg
 
 			text
-				set-type-size(x-small)
+				set-type-size(xxx-small)
 				font-weight 500
 				letter-spacing 0.04em
+				+mq('bp-4')
+					set-type-size(x-small)
 				&.bg
 					fill none
 					stroke-width 4px
@@ -114,13 +124,18 @@
 	.figure__footer
 		display flex
 		justify-content space-between
+		flex-wrap wrap
 	
 	.legend
-		margin 0
+		margin 0.5em 0
 		color $secondary
 		font-weight 400
 		opacity 0
 		transition opacity 250ms ease-in-out
+		set-type-size(xxx-small, true)
+		+mq('bp-4')
+			margin 0
+			set-type-size(x-small, true)
 		&.is-visible
 			opacity 1
 

@@ -1,16 +1,22 @@
 .tooltip
 	position absolute
-	top 50%
-	left 50%
 	z-index set-index(overlay)
 	background rgba($off-white, 0.95)
-	width 22rem
 	box-shadow 0 0 10px 2px rgba($fg, 0.25)
 	padding 1rem
-	pointer-events none
 	visibility hidden
 	transition top 250ms ease-in-out, left 250ms ease-in-out
-	transform translate(-50%, -115%)
+	width 18rem
+	top 0
+	left 50%
+	transform translate(-50%, 0)
+	pointer-events none
+	+mq('bp-4')
+		width 22rem
+		top 50%
+		left 50%
+		transform translate(-50%, -115%)
+		
 	&.is-center
 		transform translate(-50%, -115%)
 		&.is-bottom
@@ -26,9 +32,11 @@
 	&.is-visible
 		visibility visible
 	p
-		set-type-size(x-small)
+		set-type-size(xx-small)
 		font-family $sans
 		margin 0
+		+mq('bp-4')
+			set-type-size(x-small)
 	
 	.display
 		display flex
@@ -64,6 +72,16 @@
 			font-weight 400
 			set-type-size(x-small)
 
+	.close
+		text-align center
+		margin-top 0.5rem
+		button
+			font-weight 500
+			set-type-size(xxx-small)
+			text-transform uppercase
+			border 1px solid $primary
+			padding 0.5em
+
 
 	&--hidden
 		opacity 0
@@ -71,3 +89,5 @@
 		transform translate(-50%, -115%)
 		background red
 		transition none
+
+	

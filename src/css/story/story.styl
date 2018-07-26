@@ -40,9 +40,10 @@ section
 
 	.annotation-note-title
 		fill $secondary
-		set-type-size(x-small, false)
+		set-type-size(xx-small, false)
 		font-weight 400
-		// letter-spacing 0.05em
+		+mq('bp-4')
+			set-type-size(x-small, false)
 
 	.connector, .note-line
 		stroke $secondary
