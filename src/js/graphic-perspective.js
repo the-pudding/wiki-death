@@ -15,11 +15,11 @@ const SEC = 1000;
 const DURATION = SEC * 3;
 const EASE = d3.easeCubicInOut;
 const HEADER_HEIGHT = d3.select('header').node().offsetHeight;
-const BP = 640
+const BP = 640;
 
 let minR = 4;
 let maxR = 16;
-let mobile = false
+let mobile = false;
 let width = 0;
 let height = 0;
 let innerHeight = 0;
@@ -133,15 +133,20 @@ function updateAxis({
 
 	function multiFormat(date) {
 		return (d3.timeYear(date) < date
-			? (mobile ? () => {} : d3.timeFormat('%b'))
+			? mobile
+				? () => {}
+				: d3.timeFormat('%b')
 			: d3.timeFormat('%Y'))(date);
 	}
 
 	function singleFormat(date) {
-		return d3.timeFormat('%b')(date)
+		return d3.timeFormat('%b')(date);
 	}
 
-	const formatter = mobile && scaleX.domain()[1] > (new Date(2017,0)) ? multiFormat : singleFormat
+	const formatter =
+		mobile && scaleX.domain()[1] > new Date(2017, 0)
+			? multiFormat
+			: singleFormat;
 	const axisX = d3
 		.axisBottom(scaleX)
 		.ticks(ticks)
@@ -279,6 +284,7 @@ function getDuration({ leave, reverse }) {
 }
 
 function handleVorEnter(d) {
+	console.log(d.data, hoverEnabled, currentStep);
 	if (hoverEnabled && currentStep === 'compare') {
 		const { pageid } = d.data;
 		const datum = peopleData.find(v => v.pageid === pageid);
@@ -749,6 +755,8 @@ const STEP = {
 		// console.log('others', { reverse, leave });
 		if (!reverse && !leave) STEP['prince-spike']({ leave: true });
 
+		tooltip.hide($tip);
+
 		const dur = getDuration({ leave, reverse });
 
 		// DATA
@@ -811,14 +819,14 @@ const STEP = {
 				})
 				.ease(EASE)
 				.st('opacity', d => {
-					const year = +d.timestamp_of_death.substring(0,4)
-					const month = +d.timestamp_of_death.substring(4, 6) - 1
-					const last = new Date(2018, 2)
-					const date = new Date(year, month)
-					if (mobile && d.display === 'Antonin Scalia') return 0
-					if (mobile && d.perspective_show &&  date < last) return 1
-					if (!mobile && d.perspective_show) return 1
-					return 0
+					const year = +d.timestamp_of_death.substring(0, 4);
+					const month = +d.timestamp_of_death.substring(4, 6) - 1;
+					const last = new Date(2018, 2);
+					const date = new Date(year, month);
+					if (mobile && d.display === 'Antonin Scalia') return 0;
+					if (mobile && d.perspective_show && date < last) return 1;
+					if (!mobile && d.perspective_show) return 1;
+					return 0;
 				});
 
 			$personMerge.filter(d => d.perspective_show).raise();
@@ -908,12 +916,11 @@ const STEP = {
 			}
 		];
 
-		annoData = annoData.filter((d,i) => {
-			if (!mobile) return true
-			if (i === 1) return false
-			return true
-		})
-		
+		annoData = annoData.filter((d, i) => {
+			if (!mobile) return true;
+			if (i === 1) return false;
+			return true;
+		});
 
 		// SCALE
 		data.sort((a, b) =>
@@ -1005,8 +1012,8 @@ const STEP = {
 			.merge($vorPath)
 			.at('d', d => (d ? `M${d.join('L')}Z` : null));
 
-		if (mobile) $vorPath.on('click', handleVorEnter)
-		else $vorPath.on('mouseenter', handleVorEnter)
+		if (mobile) $vorPath.on('click', handleVorEnter);
+		else $vorPath.on('mouseenter', handleVorEnter);
 
 		exitPerson($person, dur.fast);
 	}
@@ -1014,11 +1021,11 @@ const STEP = {
 
 function updateDimensions() {
 	innerHeight = window.innerHeight;
-	mobile = d3.select('body').node().offsetWidth < BP
-	if (mobile) MARGIN.right = 10
-	minR = mobile ? 2 : 4
-	maxR = mobile ? 8 : 16
-	const frac = mobile ? 0.7 : 0.8
+	mobile = d3.select('body').node().offsetWidth < BP;
+	if (mobile) MARGIN.right = 10;
+	minR = mobile ? 2 : 4;
+	maxR = mobile ? 8 : 16;
+	const frac = mobile ? 0.7 : 0.8;
 	height = Math.floor(innerHeight * frac) - MARGIN.top - MARGIN.bottom;
 	width = $chart.node().offsetWidth - MARGIN.left - MARGIN.right;
 }
@@ -1107,11 +1114,12 @@ function setupScroller() {
 function setupTooltip() {
 	$tip = tooltip.init({ container: $chart });
 	if (mobile) {
+		$tip[0].select('.close').on('click', tooltip.hide($tip));
+	} else {
 		$svg.on('mouseleave', () => {
 			tooltip.hide($tip);
 		});
 	}
-	if (mobile) $tip[0].select('.close').on('click', tooltip.hide($tip))
 }
 
 function loadData(people) {
@@ -1164,9 +1172,9 @@ function test() {
 function init(people) {
 	loadData(people).then(() => {
 		resize();
-		setupScroller();
+		// setupScroller();
 		setupTooltip();
-		// test();
+		test();
 	});
 }
 

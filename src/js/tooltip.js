@@ -85,10 +85,10 @@ function init({ container }) {
 
 		$info.append('p.cause').html('Cause of death: <span></span>');
 
-		$el
-			.append('div.close')
-			.append('button')
-			.text('Close');
+		const $btn = $el.append('div.close').append('button');
+
+		$btn.text('Close');
+		$btn.on('click', () => hide(el));
 	});
 
 	return [tip, tipH];

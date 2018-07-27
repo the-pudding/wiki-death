@@ -10,11 +10,12 @@
 	top 0
 	left 50%
 	transform translate(-50%, 0)
-	pointer-events none
+
 	+mq('bp-4')
 		width 22rem
 		top 50%
 		left 50%
+		pointer-events none
 		transform translate(-50%, -115%)
 		
 	&.is-center
@@ -75,6 +76,8 @@
 	.close
 		text-align center
 		margin-top 0.5rem
+		+mq('bp-4')
+			display none
 		button
 			font-weight 500
 			set-type-size(xxx-small)
