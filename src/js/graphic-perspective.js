@@ -1171,9 +1171,9 @@ function test() {
 function init(people) {
 	loadData(people).then(() => {
 		resize();
-		// setupScroller();
+		setupScroller();
 		setupTooltip();
-		test();
+		// test();
 	});
 }
 
