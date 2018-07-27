@@ -4,7 +4,7 @@ import * as Annotate from 'd3-svg-annotation';
 import cleanData from './clean-data';
 import tooltip from './tooltip';
 
-const MEDIAN = 251787588 * 2; // july 26
+const MEDIAN = 251755934.5 * 2; // july 26
 const MARGIN = { top: 20, bottom: 40, left: 50, right: 50 };
 const FONT_SIZE = 12;
 const PRINCE_ID = '57317';
@@ -284,7 +284,6 @@ function getDuration({ leave, reverse }) {
 }
 
 function handleVorEnter(d) {
-	console.log(d.data, hoverEnabled, currentStep);
 	if (hoverEnabled && currentStep === 'compare') {
 		const { pageid } = d.data;
 		const datum = peopleData.find(v => v.pageid === pageid);
