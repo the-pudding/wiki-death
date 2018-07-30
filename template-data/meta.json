@@ -1,13 +1,11 @@
 {
-	"title": "Title Case Headline Goes Here",
-	"description":
-		"Your dek goes here. It is probably one or two sentences that succinctly describe more explicitly what the story will be about.",
-	"url": "https://pudding.cool/year/month/name/",
-	"keywords": "tk",
+	"url": "https://pudding.cool/2018/08/wiki-death/",
+	"keywords":
+		"wikipedia, celebrity, famous, death, pageviews, traffic, data, analysis, visualization, Prince",
 	"imgFacebook":
-		"https://pudding.cool/year/month/name/assets/social/social-facebook.jpg",
+		"https://pudding.cool/2018/08/wiki-death/assets/social/social-facebook.jpg",
 	"imgTwitter":
-		"https://pudding.cool/year/month/name/assets/social/social-twitter.jpg",
+		"https://pudding.cool/2018/08/wiki-death/assets/social/social-twitter.jpg",
 	"author": {
 		"name": "Russell Goldenberg",
 		"url": "https://pudding.cool/author/russell-goldenberg",
