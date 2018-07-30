@@ -35,7 +35,7 @@ function hide(el) {
 	el[0].classed('is-visible', false);
 }
 
-function show({ el, d, pos, mobile }) {
+function show({ el, d, pos, mobile, useY }) {
 	// content
 	el.forEach($el => {
 		$el.select('.name').text(d.display);
@@ -62,6 +62,8 @@ function show({ el, d, pos, mobile }) {
 			.classed('is-right', className.right)
 			.classed('is-left', className.left)
 			.classed('is-bottom', className.bottom);
+	} else if (useY) {
+		el[0].classed('is-visible', true).st({ top });
 	} else {
 		el[0].classed('is-visible', true);
 	}

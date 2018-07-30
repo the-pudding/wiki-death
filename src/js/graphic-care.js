@@ -1,18 +1,11 @@
 import cleanData from './clean-data';
 import tooltip from './tooltip';
 
-const MARGIN = { top: 20, bottom: 40, left: 40, right: 20 };
-const FONT_SIZE = 12;
-const SEC = 1000;
-const DURATION = SEC * 3;
-const EASE = d3.easeCubicInOut;
 const MAX_WEEKS = 12;
 
-let width = 0;
-let height = 0;
 let peopleData = null;
 let pageviewData = null;
-
+let mobile = false;
 const $section = d3.select('#care');
 const $figure = $section.select('.figure--chart');
 const $ul = $figure.select('ul');
@@ -30,23 +23,11 @@ function handleNameEnter(datum) {
 	// const sz = this.offsetWidth / 2;
 	const [x, y] = d3.mouse($ul.node());
 	const pos = { x: x - m[0], y };
-	tooltip.show({ el: $tip, d: datum, pos });
-}
-
-function updateDimensions() {
-	const h = window.innerHeight;
-	// height = Math.floor(h * 0.8) - MARGIN.top - MARGIN.bottom;
-	// width = $chart.node().offsetWidth - MARGIN.left - MARGIN.right;
-	height = 0;
-	width = 0;
+	tooltip.show({ el: $tip, d: datum, pos, mobile, useY: true });
 }
 
 function resize() {
-	updateDimensions();
-	// $svg.at({
-	// 	width: width + MARGIN.left + MARGIN.right,
-	// 	height: height + MARGIN.top + MARGIN.bottom
-	// });
+	mobile = d3.select('body').classed('is-mobile');
 }
 
 function setupChart() {
@@ -85,17 +66,19 @@ function setupChart() {
 		.selectAll('.person')
 		.data(d => d.values)
 		.enter()
-		.append('li.person')
-		.on('mouseenter', handleNameEnter)
-		.on('mouseleave', () => {
+		.append('li.person');
+
+	if (mobile) {
+		$person.on('touchend', handleNameEnter);
+	} else {
+		$person.on('mouseenter', handleNameEnter).on('mouseleave', () => {
 			tooltip.hide($tip);
 		});
+	}
 
-	$person
-		.append('a')
-		.text(d => d.display)
-		.at('href', d => d.link)
-		.at('target', '_blank');
+	const $a = $person.append('a').text(d => d.display);
+
+	if (!mobile) $a.at('href', d => d.link).at('target', '_blank');
 }
 
 function getWeeksUntilNorm({ last_updated, pageviews }) {

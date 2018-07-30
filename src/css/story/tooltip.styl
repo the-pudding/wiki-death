@@ -76,8 +76,7 @@
 	.close
 		text-align center
 		margin-top 0.5rem
-		+mq('bp-4')
-			display none
+		display none
 		button
 			font-weight 500
 			set-type-size(xxx-small)
@@ -90,7 +89,8 @@
 		opacity 0
 		pointer-events none
 		transform translate(-50%, -115%)
-		background red
 		transition none
 
 	
+.is-mobile .tooltip .close
+	display block

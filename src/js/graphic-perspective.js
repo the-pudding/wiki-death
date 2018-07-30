@@ -4,7 +4,7 @@ import * as Annotate from 'd3-svg-annotation';
 import cleanData from './clean-data';
 import tooltip from './tooltip';
 
-const MEDIAN = 251755934.5 * 2; // july 26
+const MEDIAN = 251724281 * 2; // july 30
 const MARGIN = { top: 20, bottom: 40, left: 50, right: 50 };
 const FONT_SIZE = 12;
 const PRINCE_ID = '57317';
@@ -19,6 +19,7 @@ const BP = 640;
 
 let minR = 4;
 let maxR = 16;
+let small = false;
 let mobile = false;
 let width = 0;
 let height = 0;
@@ -133,7 +134,7 @@ function updateAxis({
 
 	function multiFormat(date) {
 		return (d3.timeYear(date) < date
-			? mobile
+			? small
 				? () => {}
 				: d3.timeFormat('%b')
 			: d3.timeFormat('%Y'))(date);
@@ -144,9 +145,9 @@ function updateAxis({
 	}
 
 	const formatter =
-		mobile && scaleX.domain()[1] > new Date(2017, 0)
-			? multiFormat
-			: singleFormat;
+		small && scaleX.domain()[1] > new Date(2017, 0)
+			? singleFormat
+			: multiFormat;
 	const axisX = d3
 		.axisBottom(scaleX)
 		.ticks(ticks)
@@ -299,7 +300,7 @@ function handleVorEnter(d) {
 			const y = +$circle.at('data-y') + MARGIN.top;
 
 			const pos = { x, y };
-			tooltip.show({ el: $tip, d: datum, pos, mobile });
+			tooltip.show({ el: $tip, d: datum, pos, mobile: mobile || small });
 		}
 	}
 }
@@ -424,7 +425,7 @@ const STEP = {
 				title: 'Lemonade is released',
 				wrap: 150,
 				padding: FONT_SIZE * 0.5,
-				dx: mobile ? -25 : -50,
+				dx: small ? -25 : -50,
 				dy: 50,
 				r: maxR * 1.25
 			}
@@ -822,9 +823,9 @@ const STEP = {
 					const month = +d.timestamp_of_death.substring(4, 6) - 1;
 					const last = new Date(2018, 2);
 					const date = new Date(year, month);
-					if (mobile && d.display === 'Antonin Scalia') return 0;
-					if (mobile && d.perspective_show && date < last) return 1;
-					if (!mobile && d.perspective_show) return 1;
+					if (small && d.display === 'Antonin Scalia') return 0;
+					if (small && d.perspective_show && date < last) return 1;
+					if (!small && d.perspective_show) return 1;
 					return 0;
 				});
 
@@ -916,7 +917,7 @@ const STEP = {
 		];
 
 		annoData = annoData.filter((d, i) => {
-			if (!mobile) return true;
+			if (!small) return true;
 			if (i === 1) return false;
 			return true;
 		});
@@ -998,20 +999,21 @@ const STEP = {
 				[width + MARGIN.left, height + MARGIN.top]
 			]);
 
-		const $vorPath = $gVor.selectAll('path');
+		let $vorPath = $gVor.selectAll('path');
 		const vorData = data.map(d =>
 			d.pageviews.find(v => v.bin_death_index === 0)
 		);
 		const polygons = voronoi.polygons(vorData);
 
-		$vorPath
+		$vorPath = $vorPath
 			.data(polygons)
 			.enter()
 			.append('path')
-			.merge($vorPath)
-			.at('d', d => (d ? `M${d.join('L')}Z` : null));
+			.merge($vorPath);
 
-		if (mobile) $vorPath.on('click', handleVorEnter);
+		$vorPath.at('d', d => (d ? `M${d.join('L')}Z` : null));
+
+		if (small || mobile) $vorPath.on('click', handleVorEnter);
 		else $vorPath.on('mouseenter', handleVorEnter);
 
 		exitPerson($person, dur.fast);
@@ -1020,11 +1022,11 @@ const STEP = {
 
 function updateDimensions() {
 	innerHeight = window.innerHeight;
-	mobile = d3.select('body').node().offsetWidth < BP;
-	if (mobile) MARGIN.right = 10;
-	minR = mobile ? 2 : 4;
-	maxR = mobile ? 8 : 16;
-	const frac = mobile ? 0.7 : 0.8;
+	small = d3.select('body').node().offsetWidth < BP;
+	if (small) MARGIN.right = 10;
+	minR = small ? 2 : 4;
+	maxR = small ? 8 : 16;
+	const frac = small ? 0.7 : 0.8;
 	height = Math.floor(innerHeight * frac) - MARGIN.top - MARGIN.bottom;
 	width = $chart.node().offsetWidth - MARGIN.left - MARGIN.right;
 }
@@ -1037,11 +1039,12 @@ function updateStep({ reverse = true, leave = false }) {
 
 function resize() {
 	updateDimensions();
+	mobile = d3.select('body').classed('is-mobile');
 
 	$figure.st({
 		height: innerHeight,
-		top: mobile ? 0 : HEADER_HEIGHT,
-		'padding-bottom': mobile ? 0 : HEADER_HEIGHT
+		top: small ? 0 : HEADER_HEIGHT,
+		'padding-bottom': small ? 0 : HEADER_HEIGHT
 	});
 
 	$svg.at({
@@ -1082,10 +1085,11 @@ function handleHoverEnter() {
 
 function handleHoverExit({ direction }) {
 	if (direction === 'up') {
-		$filter.classed('is-onscreen', false);
 		hoverEnabled = false;
 		$chart.classed('is-hover', false);
 		$article.classed('is-disabled', false);
+		$filter.classed('is-onscreen', false);
+
 		$people.selectAll('.person').classed('is-active', false);
 		tooltip.hide($tip);
 	}
@@ -1112,11 +1116,12 @@ function setupScroller() {
 
 function setupTooltip() {
 	$tip = tooltip.init({ container: $chart });
-	if (mobile) {
+	if (small || mobile) {
 		$tip[0].select('.close').on('click', tooltip.hide($tip));
 	} else {
 		$svg.on('mouseleave', () => {
 			tooltip.hide($tip);
+			$people.selectAll('.person').classed('is-active', false);
 		});
 	}
 }

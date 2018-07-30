@@ -5,8 +5,13 @@
 		</a>
 		<time></time>{{copy.pubDate}}</time>
 	</p>
-	<div class='intro__prelude'>
+	<div class='intro__prelude prelude--1'>
 		{{#each copy.prelude}}
+		<p>{{{value}}}</p>
+		{{/each}}
+	</div>
+	<div class='intro__prelude prelude--2'>
+		{{#each copy.prelude2}}
 		<p>{{{value}}}</p>
 		{{/each}}
 	</div>
