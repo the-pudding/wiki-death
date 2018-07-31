@@ -404,6 +404,10 @@ const STEP = {
 			.transition()
 			.duration(dur.fast)
 			.ease(EASE)
+			.at(
+				'transform',
+				d => `translate(${scaleX(d.date)}, ${scaleY(d.views_adjusted)})`
+			)
 			.at('r', minR)
 			.st('stroke-width', minR / 2);
 
@@ -452,16 +456,18 @@ const STEP = {
 		$personMerge.classed('is-highlight', true);
 		$personMerge
 			.selectAll('circle')
+			.at(
+				'transform',
+				d => `translate(${scaleX(d.date)}, ${scaleY(d.views_adjusted)})`
+			)
 			.filter(d => d.timestamp === BEYONCE_LAST)
 			.transition()
 			.duration(dur.fast)
 			.ease(EASE)
 			.at('r', maxR)
 			.st('stroke-width', maxR / 2)
-			.at(
-				'transform',
-				d => `translate(${scaleX(d.date)}, ${scaleY(d.views_adjusted)})`
-			);
+
+
 
 		// ANNOTATION
 		createAnnotation({ scaleX, scaleY, annoData, dur: dur.fast });
@@ -526,6 +532,11 @@ const STEP = {
 					d => `translate(${scaleX(d.date)}, ${scaleY(d.views_adjusted)})`
 				);
 		} else {
+			$personMerge.selectAll('circle')
+				.at(
+					'transform',
+					d => `translate(${scaleX(d.date)}, ${scaleY(d.views_adjusted)})`
+				)
 			const $prince = $personMerge.filter(d => d.pageid === PRINCE_ID);
 			const $bey = $personMerge.filter(d => d.pageid === 'beyonce');
 			$prince.call(resetLine);
@@ -560,10 +571,6 @@ const STEP = {
 				$prince
 					.selectAll('circle')
 					.filter((d, i) => i < len)
-					// .transition()
-					// .duration(dur.fast)
-					// .delay((d, i, n) => dur.slow * EASE(i / n.length))
-					// .ease(EASE)
 					.at('r', d => (d.bin_death_index === 0 ? maxR : minR))
 					.st(
 						'stroke-width',
@@ -669,7 +676,7 @@ const STEP = {
 				.st(
 					'stroke-width',
 					d => (d.bin_death_index === 0 ? maxR / 2 : minR / 2)
-				);
+				)
 		};
 
 		const line = getLine({ scaleX, scaleY });
@@ -1066,7 +1073,7 @@ function resize() {
 	$article.select('.step-hover').st('padding-bottom', innerHeight * 0.4);
 
 	scroller.resize();
-	// scrollerHover.resize();
+	scrollerHover.resize();
 	updateStep({ reverse: false, leave: true });
 }
 

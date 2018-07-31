@@ -132,8 +132,10 @@ function handleSvgExit() {
 }
 
 function updateDimensions() {
-	width = $chart.node().offsetWidth - MARGIN.left - MARGIN.right;
-	height = maxHeight * OFFSET * peopleData.length + maxHeight;
+	if (peopleData) {
+		width = $chart.node().offsetWidth - MARGIN.left - MARGIN.right;
+		height = maxHeight * OFFSET * peopleData.length + maxHeight;
+	}
 }
 
 function adjustTspan($name) {
