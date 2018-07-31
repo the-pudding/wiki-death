@@ -1,10 +1,11 @@
+import 'intersection-observer'
 import Stickyfill from 'stickyfilljs';
 import scrollama from 'scrollama';
 import * as Annotate from 'd3-svg-annotation';
 import cleanData from './clean-data';
 import tooltip from './tooltip';
 
-const MEDIAN = 251724281 * 2; // july 30
+const MEDIAN = 251755934.5 * 2; // july 30
 const MARGIN = { top: 20, bottom: 40, left: 50, right: 50 };
 const FONT_SIZE = 12;
 const PRINCE_ID = '57317';
@@ -465,9 +466,7 @@ const STEP = {
 			.duration(dur.fast)
 			.ease(EASE)
 			.at('r', maxR)
-			.st('stroke-width', maxR / 2)
-
-
+			.st('stroke-width', maxR / 2);
 
 		// ANNOTATION
 		createAnnotation({ scaleX, scaleY, annoData, dur: dur.fast });
@@ -532,11 +531,12 @@ const STEP = {
 					d => `translate(${scaleX(d.date)}, ${scaleY(d.views_adjusted)})`
 				);
 		} else {
-			$personMerge.selectAll('circle')
+			$personMerge
+				.selectAll('circle')
 				.at(
 					'transform',
 					d => `translate(${scaleX(d.date)}, ${scaleY(d.views_adjusted)})`
-				)
+				);
 			const $prince = $personMerge.filter(d => d.pageid === PRINCE_ID);
 			const $bey = $personMerge.filter(d => d.pageid === 'beyonce');
 			$prince.call(resetLine);
@@ -676,7 +676,7 @@ const STEP = {
 				.st(
 					'stroke-width',
 					d => (d.bin_death_index === 0 ? maxR / 2 : minR / 2)
-				)
+				);
 		};
 
 		const line = getLine({ scaleX, scaleY });
