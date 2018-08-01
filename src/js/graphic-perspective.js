@@ -1,4 +1,4 @@
-import 'intersection-observer'
+import 'intersection-observer';
 import Stickyfill from 'stickyfilljs';
 import scrollama from 'scrollama';
 import * as Annotate from 'd3-svg-annotation';
@@ -218,13 +218,12 @@ function enterCircles($person, { scaleX, scaleY, r = minR }) {
 	const $c = $person
 		.select('.circles')
 		.selectAll('circle')
-		.data(
-			d =>
-				d.pageviews.filter(
-					p =>
-						['beyonce', PRINCE_ID].includes(p.pageid) || p.bin_death_index === 0
-				),
-			k => k.timestamp
+		.data(d => {
+			return d.pageviews.filter(
+				p =>
+					['beyonce', PRINCE_ID].includes(p.pageid) || p.bin_death_index === 0
+			)
+		},k => k.timestamp
 		);
 
 	const $enter = $c
@@ -374,7 +373,6 @@ function createAnnotation({ scaleX, scaleY, annoData, dur = 0, delay = 0 }) {
 // step render
 const STEP = {
 	context: ({ reverse, leave }) => {
-		// console.log('context', { reverse, leave });
 		const dur = getDuration({ leave, reverse });
 
 		// DATA
@@ -418,7 +416,6 @@ const STEP = {
 		exitPerson($person, dur.fast);
 	},
 	lemonade: ({ reverse, leave }) => {
-		// console.log('lemonade', { reverse, leave });
 		if (!reverse && !leave) STEP.context({ leave: true });
 		const dur = getDuration({ leave, reverse });
 
@@ -474,7 +471,6 @@ const STEP = {
 		exitPerson($person, dur.fast);
 	},
 	'prince-before': ({ reverse, leave }) => {
-		// console.log('prince-before', { reverse, leave });
 		if (!reverse && !leave) STEP.lemonade({ leave: true });
 
 		const dur = getDuration({ leave, reverse });
@@ -614,7 +610,6 @@ const STEP = {
 		exitPerson($person, dur.fast);
 	},
 	'prince-spike': ({ reverse, leave }) => {
-		// console.log('prince-spike', { reverse, leave });
 		if (!reverse && !leave) STEP['prince-before']({ leave: true });
 
 		const dur = getDuration({ leave, reverse });
@@ -759,7 +754,6 @@ const STEP = {
 		if (leave && !reverse) addSpike();
 	},
 	others: ({ reverse, leave }) => {
-		// console.log('others', { reverse, leave });
 		if (!reverse && !leave) STEP['prince-spike']({ leave: true });
 
 		tooltip.hide($tip);
@@ -771,7 +765,6 @@ const STEP = {
 			...d,
 			pageviews: trimPageviews(d.pageviews, { start: 0, end: 0 })
 		}));
-
 		// SCALE
 		data.sort((a, b) =>
 			d3.descending(a.death_views_adjusted_2, b.death_views_adjusted_2)
@@ -809,33 +802,37 @@ const STEP = {
 				.at('r', d => scaleR(d.views_adjusted))
 				.at('stroke-width', minR / 2);
 
-			$personMerge
-				.selectAll('text')
-				.at('transform', d => {
-					const x = scaleX(d.pageviews[0].date);
-					const y = scaleY(d.pageviews[0].views_adjusted);
-					const r = scaleR(d.pageviews[0].views_adjusted * 1.5);
-					return `translate(${x}, ${y - r})`;
-				})
-				.transition()
-				.duration(dur.medium)
-				.delay(d => {
-					if (reverse) return 0;
-					const { index } = peopleData.find(p => p.pageid === d.pageid);
-					return dur.slow * (index / peopleData.length);
-				})
-				.ease(EASE)
-				.st('opacity', d => {
-					const year = +d.timestamp_of_death.substring(0, 4);
-					const month = +d.timestamp_of_death.substring(4, 6) - 1;
-					const last = new Date(2018, 2);
-					const date = new Date(year, month);
-					if (small && d.display === 'Antonin Scalia') return 0;
-					if (small && d.perspective_show && date < last) return 1;
-					if (!small && d.perspective_show) return 1;
-					return 0;
-				});
+			$personMerge.each((d,i,n) => {
+				const $p = d3.select(n[i])
+				$p.selectAll('text')
+					.at('transform', () => {
+						const last = d.pageviews[0]
+						const x = scaleX(last.date);
+						const y = scaleY(last.views_adjusted);
+						const r = scaleR(last.views_adjusted * 1.5);
+						return `translate(${x}, ${y - r})`;
+					})
+					.transition()
+					.duration(dur.medium)
+					.delay(() => {
+						if (reverse) return 0;
+						const { index } = peopleData.find(p => p.pageid === d.pageid);
+						return dur.slow * (index / peopleData.length);
+					})
+					.ease(EASE)
+					.st('opacity', () => {
+						const year = +d.timestamp_of_death.substring(0, 4);
+						const month = +d.timestamp_of_death.substring(4, 6) - 1;
+						const last = new Date(2018, 2);
+						const date = new Date(year, month);
+						if (small && d.display === 'Antonin Scalia') return 0;
+						if (small && d.perspective_show && date < last) return 1;
+						if (!small && d.perspective_show) return 1;
+						return 0;
+					});
 
+			})
+				
 			$personMerge.filter(d => d.perspective_show).raise();
 			$personMerge
 				.selectAll('.is-not-death-index')
@@ -862,7 +859,7 @@ const STEP = {
 				d => `translate(${scaleX(d.date)}, ${scaleY(d.views_adjusted)})`
 			)
 			.on('end', d => {
-				if (d && d.pageid === PRINCE_ID && !leave) addOthers();
+				if (d && d.pageid === PRINCE_ID && d.bin_death_index === 0 && !leave) addOthers();
 			});
 		// highlight prince
 		$person.classed('is-highlight', false);
@@ -873,13 +870,9 @@ const STEP = {
 		exitPerson($person, dur.fast);
 
 		// LEAVE
-		if (leave && !reverse) {
-			addOthers();
-		}
+		if (leave && !reverse) addOthers();
 	},
-	compare: ({ reverse, leave }) => {
-		// console.log('compare', { reverse, leave });
-		if (!reverse && !leave) STEP.others({ leave: true });
+	compare: ({ reverse, leave }) => {		if (!reverse && !leave) STEP.others({ leave: true });
 		const dur = getDuration({ leave, reverse });
 		// DATA
 		const data = peopleData.map(d => ({
@@ -1039,9 +1032,13 @@ function updateDimensions() {
 }
 
 function updateStep({ reverse = true, leave = false }) {
-	// console.log({ currentStep, reverse, leave });
 	if (STEP[currentStep]) STEP[currentStep]({ reverse, leave });
 	$legend.classed('is-visible', currentStep === 'compare');
+}
+
+function resizeScroll() {
+	scroller.resize();
+	scrollerHover.resize();
 }
 
 function resize() {
@@ -1072,13 +1069,11 @@ function resize() {
 
 	$article.select('.step-hover').st('padding-bottom', innerHeight * 0.4);
 
-	scroller.resize();
-	scrollerHover.resize();
+	resizeScroll();
 	updateStep({ reverse: false, leave: true });
 }
 
 function handleStepEnter({ element, index, direction }) {
-	// console.log({ step: 'enter', index, element, direction });
 	currentStep = d3.select(element).at('data-step');
 	updateStep({ reverse: direction === 'up' });
 }
@@ -1108,7 +1103,8 @@ function setupScroller() {
 	scroller
 		.setup({
 			step: '#perspective article .step',
-			offset: 0.99
+			offset: 0.99,
+			debug: true
 		})
 		.onStepEnter(handleStepEnter);
 
@@ -1144,6 +1140,7 @@ function loadData(people) {
 				...d,
 				pageviews: pageviewData.filter(p => p.pageid === d.pageid)
 			}));
+
 			const beyoncePageviews = cleanData.pageview(response[1]);
 			beyonceData = [
 				{
@@ -1183,10 +1180,10 @@ function test() {
 function init(people) {
 	loadData(people).then(() => {
 		resize();
-		setupScroller();
+		// setupScroller();
 		setupTooltip();
-		// test();
+		test();
 	});
 }
 
-export default { init, resize, filter };
+export default { init, resize, resizeScroll, filter };
