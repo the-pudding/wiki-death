@@ -51,6 +51,7 @@ let $tip = null;
 
 const scroller = scrollama();
 const scrollerHover = scrollama();
+const scrollerConclusion = scrollama();
 const voronoi = d3.voronoi();
 
 function filter({ name, value }) {
@@ -1039,6 +1040,7 @@ function updateStep({ reverse = true, leave = false }) {
 function resizeScroll() {
 	scroller.resize();
 	scrollerHover.resize();
+	scrollerConclusion.resize();
 }
 
 function resize() {
@@ -1097,6 +1099,14 @@ function handleHoverExit({ direction }) {
 	}
 }
 
+function handleConclusionEnter() {
+	$filter.classed('is-onscreen', false);
+}
+
+function handleConclusionExit({direction}) {
+	$filter.classed('is-onscreen', direction === 'up');
+}
+
 function setupScroller() {
 	Stickyfill.add($figure.node());
 
@@ -1104,7 +1114,6 @@ function setupScroller() {
 		.setup({
 			step: '#perspective article .step',
 			offset: 0.99,
-			debug: true
 		})
 		.onStepEnter(handleStepEnter);
 
@@ -1115,6 +1124,14 @@ function setupScroller() {
 		})
 		.onStepEnter(handleHoverEnter)
 		.onStepExit(handleHoverExit);
+	
+	scrollerConclusion
+		.setup({
+			step: '#conclusion',
+			offset: 0.5
+		})
+		.onStepEnter(handleConclusionEnter)
+		.onStepExit(handleConclusionExit);
 }
 
 function setupTooltip() {
