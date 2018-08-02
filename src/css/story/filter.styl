@@ -11,6 +11,8 @@
 	padding 0.75rem
 	transform translate3d(-100%, 100%, 0)
 	transition transform 250ms ease-in-out
+	&.is-unclicked
+		animation pulse 10s ease-in-out infinite
 	&.is-onscreen
 		transform translate3d(-62%, 100%, 0)
 	&.is-active
@@ -68,3 +70,20 @@
 		right 0.75rem
 		display inline-block
 		cursor pointer
+	
+	
+
+@keyframes pulse
+	0%
+		left 0
+	2%
+		left 1rem
+	4%
+		left 0
+	50%
+		left 0
+	52%
+		left 1rem
+	54%
+		left 0
+	

@@ -12,6 +12,7 @@ const $value = $label.select('.label__value');
 function toggle() {
 	const visible = !$filters.classed('is-visible');
 	$filters.classed('is-visible', visible);
+	$filters.classed('is-unclicked', false);
 }
 
 function remove() {
