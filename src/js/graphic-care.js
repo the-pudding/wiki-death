@@ -14,7 +14,11 @@ let $tip = null;
 
 function filter({ name, value }) {
 	const $person = $ul.selectAll('.person');
-	if (name) $person.classed('is-faded', d => !d[name].includes(value));
+	if (name)
+		$person.classed('is-faded', d => {
+			console.log(d.display, d[name]);
+			return !d[name].includes(value);
+		});
 	else $person.classed('is-faded', false);
 }
 
